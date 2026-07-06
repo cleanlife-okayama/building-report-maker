@@ -119,10 +119,13 @@
     "・写真タイトル\n・撮影箇所\n・調査結果の目安\n・現在の状態\n・この箇所の対応目安\n\n" +
     "回答は必ず次の見出しごとに分け、すべての項目を省略せず回答してください。\n" +
     "【写真タイトル】\n【撮影箇所】\n【調査結果の目安】\n【現在の状態】\n【この箇所の対応目安】\n\n" +
-    "必要に応じて、報告書2ページ目の「今回の確認結果にもとづく目安」に使う下書きも提案してください。\n" +
-    "各項目は「目安1〜目安5」と16字以内を目安にした短い表示文で回答してください。\n" +
+    "必要に応じて、報告書2ページ目の「今回の確認結果にもとづく目安」に使う下書きも必ず提案してください。\n" +
+    "6項目の見出し名は変更せず、各項目は必ず「程度：目安1〜目安5」「表示文：16字以内の短い文」の2行で回答してください。\n" +
     "この目安は確定判断ではなく、担当者が後から確認・変更するための下書きです。\n\n" +
     "【目安：緊急性】\n【目安：安全性】\n【目安：使用上の支障】\n【目安：劣化・損傷の程度】\n【目安：建物への影響】\n【目安：維持管理上の注意度】\n\n" +
+    "6項目の回答例：\n" +
+    "【目安：緊急性】\n程度：目安3\n表示文：一部要確認\n\n" +
+    "【目安：安全性】\n程度：目安2\n表示文：安全確認\n\n" +
     "空欄があっても「未入力です」で止めず、写真と入力内容から分かる範囲で全項目の案を作成してください。入力済みの内容も省略せず、必要に応じて分かりやすく整えてください。\n\n" +
     "一般のお客様にも伝わる、やさしく自然な説明文にしてください。写真だけで断定できない内容は断定せず、「可能性があります」「確認が必要です」「おすすめします」などの表現を使ってください。\n\n" +
     "入力内容に「前項と同様」「上記の通り」「前頁と同様」「同じです」などの表現がある場合も、そのまま使わず、この項目だけで意味が通る文章に言い換えてください。\n\n" +
@@ -2831,18 +2834,22 @@
 
     const syncPreview = () => {
       currentEntries = collectAiReplyImportEntries(textarea.value, targetType, targetId);
+      const status = getAiReplyImportStatus(currentEntries, targetType);
       preview.replaceChildren(
         currentEntries.length
-          ? el(
-              "div",
-              { className: "ai-reply-preview-list" },
-              currentEntries.map((entry) =>
+          ? el("div", { className: "ai-reply-preview-list" }, [
+              el("div", { className: "ai-reply-preview-summary" }, [
+                el("strong", { text: "読み取り結果" }),
+                el("p", { text: `読み取れた項目：${status.found.join("、") || "なし"}` }),
+                status.missing.length ? el("p", { text: `未検出の項目：${status.missing.join("、")}` }) : "",
+              ]),
+              ...currentEntries.map((entry) =>
                 el("div", { className: "ai-reply-preview-item" }, [
                   el("strong", { text: entry.label }),
                   el("p", { text: entry.next }),
                 ]),
               ),
-            )
+            ])
           : el("p", {
               className: "ai-reply-import-empty",
               text: "読み取れる見出しがまだありません。AI回答を貼り付けると、ここに反映候補が表示されます。",
@@ -2869,6 +2876,13 @@
               window.alert("反映できる見出しが見つかりませんでした。AI回答の見出しを確認してください。");
               return;
             }
+            const status = getAiReplyImportStatus(currentEntries, targetType);
+            if (
+              status.missing.length > 0 &&
+              !window.confirm(`読み取れなかった項目があります。\n\n未検出：${status.missing.join("、")}\n\n反映できる項目だけ反映しますか？`)
+            ) {
+              return;
+            }
             const overwriteCount = currentEntries.filter((entry) => !isBlank(entry.current) && safeText(entry.current).trim() !== safeText(entry.next).trim()).length;
             if (
               overwriteCount > 0 &&
@@ -2890,29 +2904,77 @@
     textarea.focus();
   }
 
+  function getAiReplyImportStatus(entries, targetType) {
+    const expected = {
+      photo: [
+        "写真タイトル",
+        "撮影箇所",
+        "調査結果の目安",
+        "現在の状態",
+        "この箇所の対応目安",
+        "緊急性",
+        "安全性",
+        "使用上の支障",
+        "劣化・損傷の程度",
+        "建物への影響",
+        "維持管理上の注意度",
+      ],
+      finding: [
+        "確認した内容",
+        "考えられること・注意点",
+        "対応の考え方",
+        "緊急性",
+        "安全性",
+        "使用上の支障",
+        "劣化・損傷の程度",
+        "建物への影響",
+        "維持管理上の注意度",
+      ],
+      assessment: [
+        "総合目安",
+        "緊急性について",
+        "おすすめの方向性",
+        "緊急性",
+        "安全性",
+        "使用上の支障",
+        "劣化・損傷の程度",
+        "建物への影響",
+        "維持管理上の注意度",
+      ],
+    }[targetType] || [];
+    const found = new Set(
+      entries.map((entry) => safeText(entry.label).split("：")[0].trim()).filter(Boolean),
+    );
+    return {
+      found: expected.filter((label) => found.has(label)),
+      missing: expected.filter((label) => !found.has(label)),
+    };
+  }
+
   function collectAiReplyImportEntries(text, targetType, targetId) {
     const sections = parseAiReplySections(text);
     const entries = [];
     if (targetType === "photo") {
       const photo = state.photos.find((item) => item.id === targetId);
       if (!photo) return entries;
-      addAiReplyField(entries, sections, ["写真タイトル"], "写真タイトル", photo.title, (value) => { photo.title = value; });
-      addAiReplyField(entries, sections, ["撮影箇所"], "撮影箇所", photo.area, (value) => { photo.area = value; });
-      addAiReplyField(entries, sections, ["調査結果の目安"], "調査結果の目安", photo.condition, (value) => { photo.condition = value; });
-      addAiReplyField(entries, sections, ["現在の状態"], "現在の状態", photo.finding || photo.memo, (value) => { photo.finding = value; });
-      addAiReplyField(entries, sections, ["この箇所の対応目安"], "この箇所の対応目安", photo.recommendation, (value) => { photo.recommendation = value; });
+      addAiReplyField(entries, sections, ["写真タイトル", "写真名", "タイトル"], "写真タイトル", photo.title, (value) => { photo.title = value; });
+      addAiReplyField(entries, sections, ["撮影箇所", "場所", "撮影場所"], "撮影箇所", photo.area, (value) => { photo.area = value; });
+      addAiReplyField(entries, sections, ["調査結果の目安", "総合目安", "全体の目安"], "調査結果の目安", photo.condition, (value) => { photo.condition = value; });
+      addAiReplyField(entries, sections, ["現在の状態", "状態", "確認した状態"], "現在の状態", photo.finding || photo.memo, (value) => { photo.finding = value; });
+      addAiReplyField(entries, sections, ["この箇所の対応目安", "対応の目安", "対応目安"], "この箇所の対応目安", photo.recommendation, (value) => { photo.recommendation = value; });
       addAssessmentAiReplyEntries(entries, sections);
     } else if (targetType === "finding") {
       const finding = state.findings.find((item) => item.id === targetId);
       if (!finding) return entries;
       addAiReplyField(entries, sections, ["確認項目名", "確認箇所", "確認項目"], "確認項目名", finding.area, (value) => { finding.area = value; });
       addAiReplyField(entries, sections, ["状態"], "状態", finding.condition, (value) => { finding.condition = value; });
-      addAiReplyField(entries, sections, ["対応の目安"], "対応の目安", priorityLabel(finding.priority), (value) => { finding.priority = priorityValueFromText(value) || value; });
-      addAiReplyField(entries, sections, ["確認した内容"], "確認した内容", finding.observation, (value) => { finding.observation = value; });
-      addAiReplyField(entries, sections, ["考えられること・注意点"], "考えられること・注意点", finding.concern, (value) => { finding.concern = value; });
-      addAiReplyField(entries, sections, ["対応の考え方"], "対応の考え方", finding.proposal, (value) => { finding.proposal = value; });
+      addAiReplyField(entries, sections, ["対応の目安", "対応目安"], "対応の目安", priorityLabel(finding.priority), (value) => { finding.priority = priorityValueFromText(value) || value; });
+      addAiReplyField(entries, sections, ["確認した内容", "確認内容", "確認事項"], "確認した内容", finding.observation, (value) => { finding.observation = value; });
+      addAiReplyField(entries, sections, ["考えられること・注意点", "注意点", "考えられること", "懸念点"], "考えられること・注意点", finding.concern, (value) => { finding.concern = value; });
+      addAiReplyField(entries, sections, ["対応の考え方", "おすすめの方向性", "対応方針", "対応案"], "対応の考え方", finding.proposal, (value) => { finding.proposal = value; });
       addAssessmentAiReplyEntries(entries, sections);
     } else if (targetType === "assessment") {
+      addAssessmentSummaryAiReplyEntries(entries, sections);
       addAssessmentAiReplyEntries(entries, sections);
     }
     return entries;
@@ -2924,11 +2986,23 @@
     entries.push({ label, current: safeText(current), next, apply: () => apply(next) });
   }
 
+  function addAssessmentSummaryAiReplyEntries(entries, sections) {
+    addAiReplyField(entries, sections, ["総合目安", "全体の目安", "調査結果の目安"], "総合目安", state.assessment.overall, (value) => {
+      state.assessment.overall = value;
+    });
+    addAiReplyField(entries, sections, ["緊急性について", "緊急性"], "緊急性について", state.assessment.urgency, (value) => {
+      state.assessment.urgency = value;
+    });
+    addAiReplyField(entries, sections, ["おすすめの方向性", "対応の考え方", "対応方針", "対応案"], "おすすめの方向性", state.assessment.policy, (value) => {
+      state.assessment.policy = value;
+    });
+  }
+
   function addAssessmentAiReplyEntries(entries, sections) {
     assessmentAiHeadings.forEach((base) => {
       const item = state.assessment.items.find((entry) => entry.id === base.id);
       if (!item) return;
-      const raw = readAiReplySection(sections, [`目安：${base.label}`, `目安:${base.label}`, base.label]);
+      const raw = readAiReplySection(sections, [`目安：${base.label}`, `目安:${base.label}`, `${base.label}について`, base.label, ...assessmentHeadingAliases(base.id)]);
       if (isBlank(raw)) return;
       const parsed = parseAssessmentAiReply(raw);
       if (parsed.value) {
@@ -2950,14 +3024,26 @@
     });
   }
 
+  function assessmentHeadingAliases(id) {
+    return {
+      urgency: ["緊急性について", "緊急性"],
+      safety: ["安全性について", "安全性"],
+      usageImpact: ["使用上の支障について", "使用上の支障"],
+      deterioration: ["劣化・損傷の程度について", "劣化の程度", "損傷の程度"],
+      buildingImpact: ["建物への影響について", "建物への影響"],
+      maintenanceAttention: ["維持管理上の注意度について", "維持管理", "管理上の注意"],
+    }[id] || [];
+  }
+
   function parseAiReplySections(text) {
     const sections = {};
     const source = safeText(text).replace(/\r\n?/g, "\n");
-    const matches = [...source.matchAll(/(?:^|\n)\s*[【\[]\s*([^】\]\n]+?)\s*[】\]]\s*/g)];
+    const headingPattern = /(?:^|\n)\s*(?:[【\[]\s*([^】\]\n]+?)\s*[】\]]|■\s*([^\n：:]{2,40})\s*|([^【\[\]■\n：:]{2,40})\s*[：:]\s*(?=\n|$))/g;
+    const matches = [...source.matchAll(headingPattern)];
     matches.forEach((match, index) => {
       const start = match.index + match[0].length;
       const end = index + 1 < matches.length ? matches[index + 1].index : source.length;
-      const key = normalizeAiReplyHeading(match[1]);
+      const key = normalizeAiReplyHeading(match[1] || match[2] || match[3]);
       const value = cleanAiReplyValue(source.slice(start, end));
       if (key && value) sections[key] = value;
     });
@@ -2971,15 +3057,45 @@
   }
 
   function readAiReplySection(sections, headings) {
-    for (const heading of headings) {
+    for (const heading of expandAiReplyHeadings(headings)) {
       const value = sections[normalizeAiReplyHeading(heading)];
       if (!isBlank(value)) return value;
     }
     return "";
   }
 
+  function expandAiReplyHeadings(headings) {
+    const groups = [
+      ["写真タイトル", "写真名", "タイトル"],
+      ["撮影箇所", "場所", "撮影場所"],
+      ["調査結果の目安", "総合目安", "全体の目安"],
+      ["現在の状態", "状態", "確認した状態"],
+      ["この箇所の対応目安", "対応の目安", "対応目安"],
+      ["確認した内容", "確認内容", "確認事項"],
+      ["考えられること・注意点", "注意点", "考えられること", "懸念点"],
+      ["対応の考え方", "おすすめの方向性", "対応方針", "対応案"],
+      ["目安：緊急性", "目安:緊急性", "緊急性について", "緊急性"],
+      ["目安：安全性", "目安:安全性", "安全性について", "安全性"],
+      ["目安：使用上の支障", "目安:使用上の支障", "使用上の支障について", "使用上の支障"],
+      ["目安：劣化・損傷の程度", "目安:劣化・損傷の程度", "劣化・損傷の程度について", "劣化の程度", "損傷の程度"],
+      ["目安：建物への影響", "目安:建物への影響", "建物への影響について", "建物への影響"],
+      ["目安：維持管理上の注意度", "目安:維持管理上の注意度", "維持管理上の注意度について", "維持管理", "管理上の注意"],
+    ];
+    const result = new Set(headings);
+    const normalized = new Set(headings.map(normalizeAiReplyHeading));
+    groups.forEach((group) => {
+      if (group.some((label) => normalized.has(normalizeAiReplyHeading(label)))) {
+        group.forEach((label) => result.add(label));
+      }
+    });
+    return [...result];
+  }
+
   function normalizeAiReplyHeading(value) {
-    return safeText(value).replace(/[ \t　]/g, "").replace(/[：:]+$/g, "");
+    return safeText(value)
+      .replace(/[ \t　]/g, "")
+      .replace(/^[■◆●・]+/g, "")
+      .replace(/[：:]+$/g, "");
   }
 
   function cleanAiReplyValue(value) {
@@ -2997,11 +3113,16 @@
       text.match(/程度\s*[：:]?\s*([1-5])/) ||
       text.match(/^([1-5])\s*[：:]/);
     const level = valueMatch ? valueMatch[1] : "";
-    let displayText = text
-      .replace(/目安\s*[1-5]\s*[：:、,\-－ー]?\s*/g, "")
-      .replace(/程度\s*[：:]?\s*[1-5]\s*[：:、,\-－ー]?\s*/g, "")
-      .replace(/表示文\s*[：:]\s*/g, "")
-      .trim();
+    const displayLine = text.match(/表示文\s*[：:]\s*(.+)/);
+    let displayText = displayLine
+      ? displayLine[1].trim()
+      : text
+          .replace(/^.*程度\s*[：:].*$/gm, "")
+          .replace(/^.*目安\s*[1-5].*$/gm, "")
+          .replace(/目安\s*[1-5]\s*[：:、,\-－ー]?\s*/g, "")
+          .replace(/程度\s*[：:]?\s*[1-5]\s*[：:、,\-－ー]?\s*/g, "")
+          .replace(/表示文\s*[：:]\s*/g, "")
+          .trim();
     displayText = displayText.split("\n").map((line) => line.trim()).filter(Boolean)[0] || "";
     return { value: level, displayText };
   }
