@@ -116,16 +116,10 @@
     "これはアプリ機能の一つです。作成したコメントは、建物調査報告書メーカーの各入力欄へコピーして使用します。前置きや補足説明はできるだけ省き、そのまま貼り付けやすい形で回答してください。\n\n" +
     "この画像を読み取ったAIは、まずこのプロンプトに従ってください。下の写真と入力内容を確認し、建物調査報告書に載せるコメント案を作成してください。\n\n" +
     "入力済み・空欄を問わず、写真と入力内容から分かる範囲で、次の全項目を整えてください。\n" +
-    "・写真タイトル\n・撮影箇所\n・調査結果の目安\n・現在の状態\n・この箇所の対応目安\n・確認した内容\n・考えられること・注意点\n・対応の考え方\n\n" +
+    "・写真タイトル\n・撮影箇所\n・調査結果の目安\n・現在の状態\n・この箇所の対応目安\n\n" +
     "回答は必ず次の見出しごとに分け、すべての項目を省略せず回答してください。\n" +
-    "【写真タイトル】\n【撮影箇所】\n【調査結果の目安】\n【現在の状態】\n【この箇所の対応目安】\n【確認した内容】\n【考えられること・注意点】\n【対応の考え方】\n\n" +
-    "必要に応じて、報告書2ページ目の「今回の確認結果にもとづく目安」に使う下書きも必ず提案してください。\n" +
-    "6項目の見出し名は変更せず、各項目は必ず「程度：目安1〜目安5」「表示文：16字以内の短い文」の2行で回答してください。\n" +
-    "この目安は確定判断ではなく、担当者が後から確認・変更するための下書きです。\n\n" +
-    "【目安：緊急性】\n【目安：安全性】\n【目安：使用上の支障】\n【目安：劣化・損傷の程度】\n【目安：建物への影響】\n【目安：維持管理上の注意度】\n\n" +
-    "6項目の回答例：\n" +
-    "【目安：緊急性】\n程度：目安3\n表示文：一部要確認\n\n" +
-    "【目安：安全性】\n程度：目安2\n表示文：安全確認\n\n" +
+    "【写真タイトル】\n【撮影箇所】\n【調査結果の目安】\n【現在の状態】\n【この箇所の対応目安】\n\n" +
+    "見出し名は変更せず、この5つ以外の見出しは回答に含めないでください。\n\n" +
     "空欄があっても「未入力です」で止めず、写真と入力内容から分かる範囲で全項目の案を作成してください。入力済みの内容も省略せず、必要に応じて分かりやすく整えてください。\n\n" +
     "一般のお客様にも伝わる、やさしく自然な説明文にしてください。写真だけで断定できない内容は断定せず、「可能性があります」「確認が必要です」「おすすめします」などの表現を使ってください。\n\n" +
     "入力内容に「前項と同様」「上記の通り」「前頁と同様」「同じです」などの表現がある場合も、そのまま使わず、この項目だけで意味が通る文章に言い換えてください。\n\n" +
@@ -136,7 +130,6 @@
     "【調査結果の目安】20字以内\n" +
     "【現在の状態】160字以内\n" +
     "【この箇所の対応目安】180字以内\n\n" +
-    "【目安：各項目】表示文は16字以内を目安\n\n" +
     "各欄の文字数目安内で、必要な説明は省略しすぎず、お客様が納得して判断できる文章にしてください。短くまとめることよりも、分かりやすく伝わることを優先してください。無理に文字数を増やさず、理由・背景・不安への配慮・対応する意味が自然に伝わる文章を優先してください。短い例を入れた方が伝わりやすい場合は、自然な範囲で入れてください。ただし、入力内容にない原因・工事内容・効果・危険性を断定して追加しないでください。";
   const PDF_TEXT_FIELD_RULES = {
     projectWorkName: { label: "工事名", maxLength: 60, warningRatio: 0.85 },
@@ -2912,23 +2905,11 @@
         "調査結果の目安",
         "現在の状態",
         "この箇所の対応目安",
-        "緊急性",
-        "安全性",
-        "使用上の支障",
-        "劣化・損傷の程度",
-        "建物への影響",
-        "維持管理上の注意度",
       ],
       finding: [
         "確認した内容",
         "考えられること・注意点",
         "対応の考え方",
-        "緊急性",
-        "安全性",
-        "使用上の支障",
-        "劣化・損傷の程度",
-        "建物への影響",
-        "維持管理上の注意度",
       ],
       assessment: [
         "総合目安",
@@ -2957,22 +2938,17 @@
     if (targetType === "photo") {
       const photo = state.photos.find((item) => item.id === targetId);
       if (!photo) return entries;
-      addAiReplyField(entries, sections, ["写真タイトル", "写真名", "タイトル"], "写真タイトル", photo.title, (value) => { photo.title = value; });
-      addAiReplyField(entries, sections, ["撮影箇所", "場所", "撮影場所"], "撮影箇所", photo.area, (value) => { photo.area = value; });
-      addAiReplyField(entries, sections, ["調査結果の目安", "総合目安", "全体の目安"], "調査結果の目安", photo.condition, (value) => { photo.condition = value; });
-      addAiReplyField(entries, sections, ["現在の状態", "状態", "確認した状態"], "現在の状態", photo.finding || photo.memo, (value) => { photo.finding = value; });
-      addAiReplyField(entries, sections, ["この箇所の対応目安", "対応の目安", "対応目安"], "この箇所の対応目安", photo.recommendation, (value) => { photo.recommendation = value; });
-      addAssessmentAiReplyEntries(entries, sections);
+      addAiReplyField(entries, sections, ["写真タイトル"], "写真タイトル", photo.title, (value) => { photo.title = value; });
+      addAiReplyField(entries, sections, ["撮影箇所"], "撮影箇所", photo.area, (value) => { photo.area = value; });
+      addAiReplyField(entries, sections, ["調査結果の目安"], "調査結果の目安", photo.condition, (value) => { photo.condition = value; });
+      addAiReplyField(entries, sections, ["現在の状態"], "現在の状態", photo.finding || photo.memo, (value) => { photo.finding = value; });
+      addAiReplyField(entries, sections, ["この箇所の対応目安"], "この箇所の対応目安", photo.recommendation, (value) => { photo.recommendation = value; });
     } else if (targetType === "finding") {
       const finding = state.findings.find((item) => item.id === targetId);
       if (!finding) return entries;
-      addAiReplyField(entries, sections, ["確認項目名", "確認箇所", "確認項目"], "確認項目名", finding.area, (value) => { finding.area = value; });
-      addAiReplyField(entries, sections, ["状態"], "状態", finding.condition, (value) => { finding.condition = value; });
-      addAiReplyField(entries, sections, ["対応の目安", "対応目安"], "対応の目安", priorityLabel(finding.priority), (value) => { finding.priority = priorityValueFromText(value) || value; });
-      addAiReplyField(entries, sections, ["確認した内容", "確認内容", "確認事項"], "確認した内容", finding.observation, (value) => { finding.observation = value; });
-      addAiReplyField(entries, sections, ["考えられること・注意点", "注意点", "考えられること", "懸念点"], "考えられること・注意点", finding.concern, (value) => { finding.concern = value; });
-      addAiReplyField(entries, sections, ["対応の考え方", "おすすめの方向性", "対応方針", "対応案"], "対応の考え方", finding.proposal, (value) => { finding.proposal = value; });
-      addAssessmentAiReplyEntries(entries, sections);
+      addAiReplyField(entries, sections, ["確認した内容"], "確認した内容", finding.observation, (value) => { finding.observation = value; });
+      addAiReplyField(entries, sections, ["考えられること・注意点"], "考えられること・注意点", finding.concern, (value) => { finding.concern = value; });
+      addAiReplyField(entries, sections, ["対応の考え方"], "対応の考え方", finding.proposal, (value) => { finding.proposal = value; });
     } else if (targetType === "assessment") {
       addAssessmentSummaryAiReplyEntries(entries, sections);
       addAssessmentAiReplyEntries(entries, sections);
@@ -2987,13 +2963,13 @@
   }
 
   function addAssessmentSummaryAiReplyEntries(entries, sections) {
-    addAiReplyField(entries, sections, ["総合目安", "全体の目安", "調査結果の目安"], "総合目安", state.assessment.overall, (value) => {
+    addAiReplyField(entries, sections, ["総合目安"], "総合目安", state.assessment.overall, (value) => {
       state.assessment.overall = value;
     });
-    addAiReplyField(entries, sections, ["緊急性について", "緊急性"], "緊急性について", state.assessment.urgency, (value) => {
+    addAiReplyField(entries, sections, ["緊急性について"], "緊急性について", state.assessment.urgency, (value) => {
       state.assessment.urgency = value;
     });
-    addAiReplyField(entries, sections, ["おすすめの方向性", "対応の考え方", "対応方針", "対応案"], "おすすめの方向性", state.assessment.policy, (value) => {
+    addAiReplyField(entries, sections, ["おすすめの方向性"], "おすすめの方向性", state.assessment.policy, (value) => {
       state.assessment.policy = value;
     });
   }
@@ -3002,7 +2978,7 @@
     assessmentAiHeadings.forEach((base) => {
       const item = state.assessment.items.find((entry) => entry.id === base.id);
       if (!item) return;
-      const raw = readAiReplySection(sections, [`目安：${base.label}`, `目安:${base.label}`, `${base.label}について`, base.label, ...assessmentHeadingAliases(base.id)]);
+      const raw = readAiReplySection(sections, [`目安：${base.label}`, `目安:${base.label}`]);
       if (isBlank(raw)) return;
       const parsed = parseAssessmentAiReply(raw);
       if (parsed.value) {
@@ -3022,17 +2998,6 @@
         });
       }
     });
-  }
-
-  function assessmentHeadingAliases(id) {
-    return {
-      urgency: ["緊急性について", "緊急性"],
-      safety: ["安全性について", "安全性"],
-      usageImpact: ["使用上の支障について", "使用上の支障"],
-      deterioration: ["劣化・損傷の程度について", "劣化の程度", "損傷の程度"],
-      buildingImpact: ["建物への影響について", "建物への影響"],
-      maintenanceAttention: ["維持管理上の注意度について", "維持管理", "管理上の注意"],
-    }[id] || [];
   }
 
   function parseAiReplySections(text) {
@@ -3057,38 +3022,11 @@
   }
 
   function readAiReplySection(sections, headings) {
-    for (const heading of expandAiReplyHeadings(headings)) {
+    for (const heading of headings) {
       const value = sections[normalizeAiReplyHeading(heading)];
       if (!isBlank(value)) return value;
     }
     return "";
-  }
-
-  function expandAiReplyHeadings(headings) {
-    const groups = [
-      ["写真タイトル", "写真名", "タイトル"],
-      ["撮影箇所", "場所", "撮影場所"],
-      ["調査結果の目安", "総合目安", "全体の目安"],
-      ["現在の状態", "状態", "確認した状態"],
-      ["この箇所の対応目安", "対応の目安", "対応目安"],
-      ["確認した内容", "確認内容", "確認事項"],
-      ["考えられること・注意点", "注意点", "考えられること", "懸念点"],
-      ["対応の考え方", "おすすめの方向性", "対応方針", "対応案"],
-      ["目安：緊急性", "目安:緊急性", "緊急性について", "緊急性"],
-      ["目安：安全性", "目安:安全性", "安全性について", "安全性"],
-      ["目安：使用上の支障", "目安:使用上の支障", "使用上の支障について", "使用上の支障"],
-      ["目安：劣化・損傷の程度", "目安:劣化・損傷の程度", "劣化・損傷の程度について", "劣化の程度", "損傷の程度"],
-      ["目安：建物への影響", "目安:建物への影響", "建物への影響について", "建物への影響"],
-      ["目安：維持管理上の注意度", "目安:維持管理上の注意度", "維持管理上の注意度について", "維持管理", "管理上の注意"],
-    ];
-    const result = new Set(headings);
-    const normalized = new Set(headings.map(normalizeAiReplyHeading));
-    groups.forEach((group) => {
-      if (group.some((label) => normalized.has(normalizeAiReplyHeading(label)))) {
-        group.forEach((label) => result.add(label));
-      }
-    });
-    return [...result];
   }
 
   function normalizeAiReplyHeading(value) {
@@ -3675,18 +3613,8 @@
       AI_WRITING_GUIDANCE +
       "\n\n" +
       "次の3項目を整えてください。\n【確認した内容】\n【考えられること・注意点】\n【対応の考え方】\n\n" +
-      "回答は必ず上記3つの見出しだけにしてください。感想、解説、総評、追加の改善提案は書かないでください。「考えられること・注意点」と「対応の考え方」が未入力でも、入力済みの内容から分かる範囲で整えてください。\n\n" +
-      "【案件情報】\n" +
-      `お客様名：${valueOrBlank(state.project.clientName)}\n` +
-      `工事名：${valueOrBlank(state.project.workName)}\n` +
-      `建物種別：${valueOrBlank(aiConsultationValue(state.project.buildingType))}\n` +
-      `相談内容：${valueOrBlank(aiConsultationValue(state.project.projectType))}\n` +
-      `調査目的：${valueOrBlank(state.project.purpose)}\n` +
-      `調査日時：${valueOrBlank(formatSurveyDateTime())}\n` +
-      `担当者：${valueOrBlank(state.project.inspector)}\n\n` +
-      "【お客様のご不安・ご相談内容】\n" +
-      `${valueOrBlank(state.summary.customerConcern)}\n\n` +
-      "【対象の確認項目カード】\n" +
+      "回答は必ず上記3つの見出しだけにしてください。見出し名は変更せず、感想、解説、総評、追加の改善提案は書かないでください。「考えられること・注意点」と「対応の考え方」が未入力でも、同じカード内の入力内容から分かる範囲で整えてください。\n\n" +
+      "【現在のカード入力】\n" +
       `確認項目名：${area}\n` +
       `状態：${condition}\n` +
       `対応の目安：${priority}\n` +
@@ -3737,80 +3665,14 @@
 
   function buildProposalAiConsultationPrompt() {
     const valueOrBlank = (value) => safeText(value).trim() || "未入力";
-    const hasFindingContent = (finding) =>
-      [finding.area, finding.condition, finding.priority, finding.observation, finding.concern, finding.proposal]
-        .some((value) => !isBlank(value));
-    const hasPhotoComment = (photo) =>
-      [photo.title, photo.area, photo.condition, photo.finding || photo.memo, photo.recommendation]
-        .some((value) => !isBlank(value));
-
-    const findingText = state.findings
-      .map((finding, index) => ({ finding, index }))
-      .filter(({ finding }) => hasFindingContent(finding))
-      .map(
-        ({ finding, index }) =>
-          `【確認項目 ${index + 1}】\n` +
-          `確認項目名：${valueOrBlank(aiConsultationValue(finding.area))}\n` +
-          `状態：${valueOrBlank(aiConsultationValue(finding.condition))}\n` +
-          `対応の目安：${valueOrBlank(priorityLabel(finding.priority))}\n` +
-          `確認した内容：${valueOrBlank(finding.observation)}\n` +
-          `考えられること・注意点：${valueOrBlank(finding.concern)}\n` +
-          `対応の考え方：${valueOrBlank(finding.proposal)}`,
-      )
-      .join("\n\n");
-
-    const photoText = state.photos
-      .map((photo, index) => ({ photo, index }))
-      .filter(({ photo }) => hasPhotoComment(photo))
-      .map(
-        ({ photo, index }) =>
-          `【写真コメント ${index + 1}】\n` +
-          `写真タイトル：${valueOrBlank(photo.title)}\n` +
-          `撮影箇所：${valueOrBlank(aiConsultationValue(photo.area))}\n` +
-          `調査結果の目安：${valueOrBlank(aiConsultationValue(photo.condition))}\n` +
-          `現在の状態：${valueOrBlank(photo.finding || photo.memo)}\n` +
-          `この箇所の対応目安：${valueOrBlank(photo.recommendation)}`,
-      )
-      .join("\n\n");
-
-    const assessmentText = (state.assessment.items || [])
-      .map(
-        (item) =>
-          `・${item.label}：${item.value ? `目安${item.value}` : "未入力"} / ` +
-          `${valueOrBlank(item.displayText || item.labelText)}`,
-      )
-      .join("\n");
-
     return (
       "【AI相談用プロンプト】\n\n" +
       "これはアプリ機能の一つです。作成した文章は、建物調査報告書メーカーの各入力欄へコピーして使用します。前置きや感想、余計な補足説明はできるだけ省き、そのまま貼り付けやすい形で回答してください。\n\n" +
       "この相談文の目的は、新しく診断することではありません。担当者が入力・選択した内容をもとに、施工方針まわりの文章を一般のお客様にも伝わる自然な表現へ整えることです。\n\n" +
       AI_WRITING_GUIDANCE +
       "\n\n" +
-      "報告書全体の内容を参考にしてください。ただし、今回回答するのは指定された施工方針セクションの7つの見出しだけです。見積書だけで価格比較されないように、なぜこの確認や工事が必要なのかが伝わる文章にしてください。強い売り込み表現にはせず、お客様が納得して判断できる説明を優先してください。\n\n" +
-      "入力内容が少ない場合でも分かる範囲で下書きを作成してください。入力内容から確認できないことは断定せず、推測が含まれる内容は「可能性があります」「確認が必要です」「担当者確認が必要です」などの表現にしてください。\n\n" +
-      "【案件情報】\n" +
-      `お客様名：${valueOrBlank(state.project.clientName)}\n` +
-      `工事名：${valueOrBlank(state.project.workName)}\n` +
-      `現場住所：${valueOrBlank(state.project.address)}\n` +
-      `建物種別：${valueOrBlank(aiConsultationValue(state.project.buildingType))}\n` +
-      `相談内容：${valueOrBlank(aiConsultationValue(state.project.projectType))}\n` +
-      `調査目的：${valueOrBlank(state.project.purpose)}\n` +
-      `調査日時：${valueOrBlank(formatSurveyDateTime())}\n` +
-      `担当者：${valueOrBlank(state.project.inspector)}\n` +
-      `天気：${valueOrBlank(state.project.weather)}\n\n` +
-      "【お客様のご不安・ご相談内容】\n" +
-      `${valueOrBlank(state.summary.customerConcern)}\n\n` +
-      "【確認項目ごとの確認結果】\n" +
-      `${findingText || "未入力"}\n\n` +
-      "【写真コメントの要約】\n" +
-      `${photoText || "未入力"}\n\n` +
-      "【今回の確認結果にもとづく目安】\n" +
-      `${assessmentText || "未入力"}\n` +
-      `総合目安：${valueOrBlank(state.assessment.overall)}\n` +
-      `緊急性について：${valueOrBlank(state.assessment.urgency)}\n` +
-      `おすすめの方向性：${valueOrBlank(state.assessment.policy)}\n\n` +
-      "【現在入力されている施工方針】\n" +
+      "施工方針セクションに入力されている内容だけを整えてください。入力内容から確認できないことは断定せず、強い売り込み表現にはしないでください。\n\n" +
+      "【現在の入力内容】\n" +
       `ご提案内容：${valueOrBlank(state.proposal.planName)}\n` +
       `おすすめする施工方針：${valueOrBlank(state.summary.recommendation)}\n` +
       `主な工事内容：${valueOrBlank(state.proposal.scope)}\n` +
@@ -3850,12 +3712,19 @@
   }
 
   async function copyProposalAiConsultationPrompt() {
-    const hasFindingMaterial = state.findings.some((finding) => !isBlank(finding.observation));
-    const hasPhotoMaterial = state.photos.some((photo) => !isBlank(photo.finding || photo.memo));
-    if (!hasFindingMaterial && !hasPhotoMaterial) {
+    const hasProposalMaterial = [
+      state.proposal.planName,
+      state.summary.recommendation,
+      state.proposal.scope,
+      state.summary.additionalRecommendations,
+      state.proposal.cautions,
+      state.proposal.watchPoint,
+      state.proposal.closing,
+    ].some((value) => !isBlank(value));
+    if (!hasProposalMaterial) {
       window.alert(
-        "先に確認結果または写真コメントを入力してください。\n" +
-          "AIは入力済みの内容をもとに、施工方針の文章を整えるための補助です。",
+        "先に施工方針セクションの内容を入力してください。\n" +
+          "AIは同じセクションに入力済みの内容をもとに、文章を整えるための補助です。",
       );
       return;
     }
@@ -3872,122 +3741,34 @@
     }
   }
 
-  function hasReportAiMaterial() {
-    const concern = !isBlank(state.summary.customerConcern);
-    const finding = state.findings.some((item) => !isBlank(item.observation));
-    const photo = state.photos.some((item) => !isBlank(item.finding || item.memo));
-    const proposal = [
-      state.proposal.planName,
-      state.summary.recommendation,
-      state.proposal.scope,
-      state.summary.additionalRecommendations,
-      state.proposal.cautions,
-      state.proposal.watchPoint,
-      state.proposal.closing,
-    ].some((value) => !isBlank(value));
-    const assessment = [
-      state.assessment.overall,
-      state.assessment.urgency,
-      state.assessment.policy,
-      ...(state.assessment.items || []).map((item) => item.displayText || item.labelText),
-    ].some((value) => !isBlank(value));
-    return concern || finding || photo || proposal || assessment;
-  }
-
-  function buildAiReportContextText() {
-    const valueOrBlank = (value) => safeText(value).trim() || "未入力";
-    const findingText = state.findings
-      .map((finding, index) => ({ finding, index }))
-      .filter(({ finding }) =>
-        [finding.area, finding.condition, finding.priority, finding.observation, finding.concern, finding.proposal]
-          .some((value) => !isBlank(value)),
-      )
-      .map(
-        ({ finding, index }) =>
-          `【確認項目 ${index + 1}】\n` +
-          `確認項目名：${valueOrBlank(aiConsultationValue(finding.area))}\n` +
-          `状態：${valueOrBlank(aiConsultationValue(finding.condition))}\n` +
-          `対応の目安：${valueOrBlank(priorityLabel(finding.priority))}\n` +
-          `確認した内容：${valueOrBlank(finding.observation)}\n` +
-          `考えられること・注意点：${valueOrBlank(finding.concern)}\n` +
-          `対応の考え方：${valueOrBlank(finding.proposal)}`,
-      )
-      .join("\n\n");
-
-    const photoText = state.photos
-      .map((photo, index) => ({ photo, index }))
-      .filter(({ photo }) =>
-        [photo.title, photo.area, photo.condition, photo.finding || photo.memo, photo.recommendation]
-          .some((value) => !isBlank(value)),
-      )
-      .map(
-        ({ photo, index }) =>
-          `【写真コメント ${index + 1}】\n` +
-          `写真タイトル：${valueOrBlank(photo.title)}\n` +
-          `撮影箇所：${valueOrBlank(aiConsultationValue(photo.area))}\n` +
-          `調査結果の目安：${valueOrBlank(aiConsultationValue(photo.condition))}\n` +
-          `現在の状態：${valueOrBlank(photo.finding || photo.memo)}\n` +
-          `この箇所の対応目安：${valueOrBlank(photo.recommendation)}`,
-      )
-      .join("\n\n");
-
-    const assessmentText = (state.assessment.items || [])
-      .map(
-        (item) =>
-          `・${item.label}：${item.value ? `目安${item.value}` : "未入力"} / ` +
-          `${valueOrBlank(item.displayText || item.labelText)}`,
-      )
-      .join("\n");
-
-    return (
-      "【案件情報】\n" +
-      `お客様名：${valueOrBlank(state.project.clientName)}\n` +
-      `工事名：${valueOrBlank(state.project.workName)}\n` +
-      `現場住所：${valueOrBlank(state.project.address)}\n` +
-      `建物種別：${valueOrBlank(aiConsultationValue(state.project.buildingType))}\n` +
-      `相談内容：${valueOrBlank(aiConsultationValue(state.project.projectType))}\n` +
-      `調査目的：${valueOrBlank(state.project.purpose)}\n` +
-      `調査日時：${valueOrBlank(formatSurveyDateTime())}\n` +
-      `担当者：${valueOrBlank(state.project.inspector)}\n` +
-      `天気：${valueOrBlank(state.project.weather)}\n\n` +
-      "【お客様のご不安・ご相談内容】\n" +
-      `${valueOrBlank(state.summary.customerConcern)}\n\n` +
-      "【確認項目ごとの確認結果】\n" +
-      `${findingText || "未入力"}\n\n` +
-      "【写真コメントの要約】\n" +
-      `${photoText || "未入力"}\n\n` +
-      "【今回の確認結果にもとづく目安】\n" +
-      `${assessmentText || "未入力"}\n` +
-      `総合目安：${valueOrBlank(state.assessment.overall)}\n` +
-      `緊急性について：${valueOrBlank(state.assessment.urgency)}\n` +
-      `おすすめの方向性：${valueOrBlank(state.assessment.policy)}\n\n` +
-      "【施工方針セクションの入力内容】\n" +
-      `ご提案内容：${valueOrBlank(state.proposal.planName)}\n` +
-      `おすすめする施工方針：${valueOrBlank(state.summary.recommendation)}\n` +
-      `主な工事内容：${valueOrBlank(state.proposal.scope)}\n` +
-      `あわせておすすめしたい対策：${valueOrBlank(state.summary.additionalRecommendations)}\n` +
-      `工事中に確認が必要なこと：${valueOrBlank(state.proposal.cautions)}\n` +
-      `今後注意しておきたい点：${valueOrBlank(state.proposal.watchPoint)}\n` +
-      `最後にお伝えしたいこと：${valueOrBlank(state.proposal.closing)}\n\n` +
-      "【現在の全体まとめ】\n" +
-      valueOrBlank(state.summary.overall)
-    );
+  function hasReportSectionAiMaterial(sectionKey) {
+    if (sectionKey === "concern") return !isBlank(state.summary.customerConcern);
+    if (sectionKey === "assessment") {
+      return [
+        state.assessment.overall,
+        state.assessment.urgency,
+        state.assessment.policy,
+        ...(state.assessment.items || []).flatMap((item) => [item.value, item.displayText || item.labelText]),
+      ].some((value) => !isBlank(value));
+    }
+    return !isBlank(state.summary.overall);
   }
 
   function buildReportSectionAiPrompt(sectionKey) {
-    const context = buildAiReportContextText();
+    const valueOrBlank = (value) => safeText(value).trim() || "未入力";
     const commonStart =
       "【AI相談用プロンプト】\n\n" +
       "これはアプリ機能の一つです。作成した文章は、建物調査報告書メーカーの入力欄へコピーして使用します。前置きや感想、余計な補足説明は省き、そのまま貼り付けやすい形で回答してください。\n\n" +
       "この相談文の目的は、新しく診断することではありません。担当者が入力・選択した内容をもとに、一般のお客様にも伝わる自然な文章へ整えることです。\n\n" +
       AI_WRITING_GUIDANCE +
-      "\n\n報告書全体の内容を参考にしてください。ただし、回答する範囲は今回指定する見出しだけです。\n\n";
+      "\n\n回答には、今回指定する入力欄の見出しだけを使用してください。\n\n";
 
     if (sectionKey === "concern") {
       return (
         commonStart +
         "お客様から聞き取った内容をもとに、何を心配されているのか、何を確認したいのかが伝わる文章へ整えてください。入力内容にない不安や希望を勝手に追加せず、言い回しだけをやさしく自然に整えてください。\n\n" +
-        context +
+        "【現在の入力内容】\n" +
+        `お客様のご不安・ご相談内容：${valueOrBlank(state.summary.customerConcern)}\n` +
         "\n\n【回答形式】\n回答は次の見出しだけにしてください。ほかの見出し、前置き、感想、解説、総評は書かないでください。\n\n" +
         "【お客様のご不安・ご相談内容】\n本文\n\n" +
         "【文字数の目安】\n【お客様のご不安・ご相談内容】260字以内\n" +
@@ -3997,11 +3778,26 @@
     }
 
     if (sectionKey === "assessment") {
+      const assessmentInputs = (state.assessment.items || [])
+        .map(
+          (item) =>
+            `【目安：${item.label}】\n` +
+            `程度：${item.value ? `目安${item.value}` : "未入力"}\n` +
+            `表示文：${valueOrBlank(item.displayText || item.labelText)}`,
+        )
+        .join("\n\n");
       return (
         commonStart +
-        "今回選択されている6項目の目安数値と表示文は変更せず、その評価を前提に文章だけを整えてください。数値を勝手に上げ下げしないでください。緊急性が低めでも放置してよい印象にはせず、緊急性が高い場合も不安をあおりすぎず、今すぐ対応・早めに検討・経過観察のどれに当たるか判断しやすい文章にしてください。\n\n" +
-        context +
-        "\n\n【回答形式】\n回答は次の3つの見出しだけにしてください。目安数値や各項目の評価は出力せず、文章だけを回答してください。\n\n" +
+        "今回選択されている6項目の程度は変更せず、各表示文と3つの説明欄を分かりやすく整えてください。「緊急性について」は長文説明欄です。「目安：緊急性」の表示文とは別の欄として扱ってください。\n\n" +
+        "【現在の入力内容】\n" +
+        `${assessmentInputs}\n\n` +
+        `【総合目安】\n${valueOrBlank(state.assessment.overall)}\n\n` +
+        `【緊急性について】\n${valueOrBlank(state.assessment.urgency)}\n\n` +
+        `【おすすめの方向性】\n${valueOrBlank(state.assessment.policy)}\n` +
+        "\n\n【回答形式】\n回答は次の9つの見出しだけにしてください。見出し名は変更せず、6項目の程度は現在の値をそのまま回答してください。\n\n" +
+        `${assessmentAiHeadings
+          .map((item) => `【目安：${item.label}】\n程度：目安1〜目安5\n表示文：16字以内`)
+          .join("\n\n")}\n\n` +
         "【総合目安】\n本文\n\n" +
         "【緊急性について】\n本文\n\n" +
         "【おすすめの方向性】\n本文\n\n" +
@@ -4009,6 +3805,7 @@
         "【総合目安】120字以内\n" +
         "【緊急性について】160字以内\n" +
         "【おすすめの方向性】200字以内\n" +
+        "【目安：各項目】表示文は16字以内\n" +
         "各欄の文字数目安内で、現在の評価と対応時期が分かりやすく伝わる文章にしてください。\n\n" +
         AI_OUTPUT_SAFETY_GUIDANCE
       );
@@ -4016,8 +3813,9 @@
 
     return (
       commonStart +
-      "報告書全体を参考に、今回分かったこと、心配な点、対応の方向性を自然につなげてください。なぜ今回の対応をおすすめするのかが伝わるようにしつつ、強い売り込みや不要な工事の提案は避けてください。最後に読んだとき、お客様が「結局どう考えればよいか」を理解し、安心して判断できる文章にしてください。\n\n" +
-      context +
+      "入力済みの全体まとめを、今回分かったこと、心配な点、対応の方向性が自然につながる文章へ整えてください。入力内容にない判断や提案は追加しないでください。\n\n" +
+      "【現在の入力内容】\n" +
+      `全体のまとめ：${valueOrBlank(state.summary.overall)}\n` +
       "\n\n【回答形式】\n回答は次の見出しだけにしてください。ほかの見出し、前置き、感想、解説、総評は書かないでください。\n\n" +
       "【全体のまとめ】\n本文\n\n" +
       "【文字数の目安】\n【全体のまとめ】300字以内\n" +
@@ -4027,10 +3825,15 @@
   }
 
   async function copyReportSectionAiPrompt(sectionKey) {
-    if (!hasReportAiMaterial()) {
+    if (!hasReportSectionAiMaterial(sectionKey)) {
+      const labels = {
+        concern: "ご相談内容",
+        assessment: "今回の確認結果にもとづく目安",
+        summary: "全体まとめ",
+      };
       window.alert(
-        "先にご相談内容、確認結果、写真コメント、施工方針のいずれかを入力してください。\n" +
-          "AIは入力済みの内容をもとに、文章を整えるための補助です。",
+        `先に「${labels[sectionKey] || "対象項目"}」を入力してください。\n` +
+          "AIは同じセクションに入力済みの内容をもとに、文章を整えるための補助です。",
       );
       return;
     }
