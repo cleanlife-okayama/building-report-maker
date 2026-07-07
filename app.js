@@ -3191,6 +3191,7 @@
           title: "",
           area: "",
           condition: "",
+          findingId: "",
           finding: "",
           recommendation: "",
           memo: "",
@@ -5293,6 +5294,7 @@
     target.photos.forEach((photo) => {
       if (!photo.id) photo.id = createId();
       photo.photoId = photo.photoId || photo.id;
+      photo.findingId = safeText(photo.findingId);
       if (!photo.finding && photo.memo) photo.finding = photo.memo;
       if (!photo.recommendation) photo.recommendation = "";
       photo.area = normalizeOptionText(photo.area);
