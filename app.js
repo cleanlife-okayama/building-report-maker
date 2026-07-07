@@ -321,6 +321,7 @@
       },
     ],
     photos: [],
+    reportLayout: "legacy",
     proposal: {
       planName: "外壁・シーリングまわりを中心にしたご提案",
       scope: "外壁の下地処理、ひび補修、シーリング（目地の防水材）まわりの確認、必要箇所の塗装を中心に検討します。",
@@ -825,6 +826,7 @@
       ]),
     ]);
     const body = el("div", {}, [
+      renderReportLayoutSelector(),
       photoDrop,
     ]);
 
@@ -835,6 +837,19 @@
     }
     body.appendChild(list);
     return panel("調査写真", [body]);
+  }
+
+  function renderReportLayoutSelector() {
+    return el("div", { className: "report-layout-selector" }, [
+      selectField(
+        "PDF・プレビュー表示形式",
+        state.reportLayout || "legacy",
+        ["legacy", "groupedByFinding"],
+        (value) => update("reportLayout", value),
+        (value) => (value === "groupedByFinding" ? "確認項目ごとに関連写真を表示" : "従来形式"),
+      ),
+      el("p", { text: "従来形式では、これまで通り確認項目と写真を分けて表示します。" }),
+    ]);
   }
 
   function renderAssessmentPanel() {
@@ -1788,6 +1803,9 @@
   function renderReport() {
     const firstPhoto = state.photos[0];
     const reportCompanyName = companyDisplayName();
+    const findingPhotoReportChildren = isGroupedReportLayout()
+      ? [renderGroupedFindingPhotoReportContent()]
+      : [renderFindingReportContent(), renderPhotoReportContent()];
 
     return el("article", { className: "report" }, [
       el("div", { className: "report-page" }, [
@@ -1825,8 +1843,7 @@
           reportTextBox("ご相談内容", state.summary.customerConcern),
         ]),
         reportSection("2. 調査写真・確認項目ごとの確認結果", [
-          renderFindingReportContent(),
-          renderPhotoReportContent(),
+          ...findingPhotoReportChildren,
         ], "photo-section"),
         reportSection("3. おすすめする施工方針", [
           optionalReportTextBox("ご提案内容", state.proposal.planName),
@@ -1871,6 +1888,10 @@
     return text ? el("div", { className: "print-running-meta", text }) : "";
   }
 
+  function isGroupedReportLayout() {
+    return state.reportLayout === "groupedByFinding";
+  }
+
   function renderFindingReportSection() {
     return reportSection("確認項目ごとの確認結果", [renderFindingReportContent()]);
   }
@@ -1901,6 +1922,65 @@
     return el("p", { className: "finding-topic" }, [
       el("strong", { text: label }),
       el("span", { text: safeText(value) }),
+    ]);
+  }
+
+  function renderGroupedFindingPhotoReportContent() {
+    const validFindingIds = new Set(state.findings.map((finding) => finding.id).filter(Boolean));
+    const blocks = state.findings.map((finding) => {
+      const relatedPhotos = state.photos.filter((photo) => photo.findingId === finding.id);
+      return el("div", { className: "grouped-finding-report-block" }, [
+        renderGroupedFindingSummary(finding),
+        relatedPhotos.length ? renderGroupedPhotoList("関連写真", relatedPhotos) : "",
+      ]);
+    });
+    const unclassifiedPhotos = state.photos.filter((photo) => !photo.findingId || !validFindingIds.has(photo.findingId));
+    if (unclassifiedPhotos.length) {
+      blocks.push(
+        el("div", { className: "grouped-finding-report-block unclassified-photo-report-block" }, [
+          renderGroupedPhotoList("未分類写真", unclassifiedPhotos),
+        ]),
+      );
+    }
+    return blocks.length
+      ? el("div", { className: "grouped-finding-photo-report" }, blocks)
+      : el("div", { className: "empty", text: "確認項目と写真はまだ入力されていません" });
+  }
+
+  function renderGroupedFindingSummary(finding) {
+    return el("div", { className: "finding-report grouped-finding-summary" }, [
+      el("div", {}, [priorityBadge(finding.priority), finding.condition ? el("p", { style: "margin-top:8px", text: finding.condition }) : ""]),
+      el("div", {}, [
+        el("h3", { text: finding.area || "確認項目" }),
+        findingTopic("確認内容", finding.observation),
+        findingTopic("考えられること", finding.concern),
+        findingTopic("対応の考え方", finding.proposal),
+      ]),
+    ]);
+  }
+
+  function renderGroupedPhotoList(title, photos) {
+    return el("div", { className: "grouped-related-photos" }, [
+      el("h3", { className: "grouped-related-photos-title", text: title }),
+      el("div", { className: "photo-report-grid grouped-photo-report-grid" }, photos.map((photo) => renderPhotoReportFigure(photo, "grouped-photo-report"))),
+    ]);
+  }
+
+  function renderPhotoReportFigure(photo, extraClassName = "") {
+    const className = ["photo-report", isWidePhoto(photo) ? "wide" : "", extraClassName].filter(Boolean).join(" ");
+    return el("figure", { className }, [
+      photo.src
+        ? renderAnnotatedImage(photo, "", photo.title || "現場写真", "cover")
+        : el("div", { className: "photo-missing", text: "写真データを読み込めませんでした" }),
+      el("figcaption", { className: "photo-caption" }, [
+        el("strong", { text: photo.title || photo.area || "現場写真" }),
+        el("dl", { className: "photo-detail-list" }, [
+          photo.area ? detailItem("撮影箇所", photo.area) : "",
+          photo.condition ? detailItem("調査結果の目安", photo.condition) : "",
+          photo.finding || photo.memo ? detailItem("現在の状態", photo.finding || photo.memo) : "",
+          photo.recommendation ? detailItem("この箇所の対応目安", photo.recommendation) : "",
+        ]),
+      ]),
     ]);
   }
 
@@ -5386,6 +5466,7 @@
     });
     target.project.buildingType = normalizeOptionText(target.project.buildingType);
     target.project.projectType = normalizeOptionText(target.project.projectType);
+    target.reportLayout = target.reportLayout === "groupedByFinding" ? "groupedByFinding" : "legacy";
     if (typeof target.showRepairProcess === "boolean") {
       target.processDiagram = target.processDiagram || {};
       target.processDiagram.enabled = target.showRepairProcess;

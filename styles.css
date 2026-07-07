@@ -842,6 +842,25 @@ textarea:focus {
   line-height: 1.7;
 }
 
+.report-layout-selector {
+  margin-bottom: 12px;
+  padding: 12px;
+  border: 1px solid rgba(139, 30, 36, 0.12);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #fffdfd, #fff9f7);
+}
+
+.report-layout-selector .field {
+  margin: 0;
+}
+
+.report-layout-selector p {
+  margin: 8px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+}
+
 .photo-drop {
   position: relative;
   display: grid;
@@ -2319,6 +2338,48 @@ textarea:focus {
   color: #4f4b4c;
   font-size: 15.5px;
   line-height: 2;
+}
+
+.grouped-finding-photo-report {
+  display: grid;
+  gap: 20px;
+}
+
+.grouped-finding-report-block {
+  display: grid;
+  gap: 14px;
+  break-inside: auto;
+}
+
+.grouped-finding-summary {
+  margin-bottom: 0;
+}
+
+.grouped-related-photos {
+  display: grid;
+  gap: 10px;
+}
+
+.grouped-related-photos-title,
+.grouped-unclassified-title {
+  margin: 4px 0 0;
+  padding-left: 12px;
+  border-left: 4px solid rgba(139, 30, 36, 0.5);
+  color: var(--brand);
+  font-size: 17px;
+  line-height: 1.45;
+}
+
+.grouped-photo-report-grid {
+  gap: 14px;
+}
+
+.grouped-photo-report {
+  box-shadow: 0 12px 26px rgba(31, 31, 31, 0.05);
+}
+
+.unclassified-photo-report-block {
+  padding-top: 4px;
 }
 
 .photo-report-grid {
@@ -3825,6 +3886,28 @@ textarea:focus {
     line-height: 1.92;
   }
 
+  .grouped-finding-photo-report {
+    gap: 5mm;
+  }
+
+  .grouped-finding-report-block {
+    gap: 3.5mm;
+    break-inside: auto;
+    page-break-inside: auto;
+  }
+
+  .grouped-related-photos {
+    gap: 2.8mm;
+  }
+
+  .grouped-related-photos-title,
+  .grouped-unclassified-title {
+    margin-top: 1mm;
+    padding-left: 2.4mm;
+    border-left-width: 0.8mm;
+    font-size: 12pt;
+  }
+
   .photo-section {
     break-before: auto;
     break-after: page;
@@ -3845,8 +3928,20 @@ textarea:focus {
     border-radius: 3mm;
   }
 
+  .grouped-photo-report-grid {
+    break-before: auto;
+  }
+
+  .grouped-photo-report {
+    height: 112mm;
+  }
+
   .photo-report:nth-child(2n) {
     break-after: page;
+  }
+
+  .grouped-photo-report:nth-child(2n) {
+    break-after: auto;
   }
 
   .photo-report:last-child {
