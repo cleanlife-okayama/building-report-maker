@@ -751,6 +751,16 @@ textarea:focus {
   font-weight: 800;
 }
 
+.finding-related-photo-actions {
+  display: flex;
+  justify-content: flex-start;
+  margin: -2px 0 10px;
+}
+
+.finding-related-photo-add {
+  font-size: 12px;
+}
+
 .finding-related-photo-list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));

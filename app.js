@@ -733,6 +733,9 @@
         el("strong", { text: "関連写真" }),
         relatedPhotos.length ? el("span", { text: `${relatedPhotos.length}枚` }) : "",
       ]),
+      el("div", { className: "finding-related-photo-actions" }, [
+        button("この項目に写真を追加", "btn small finding-related-photo-add", () => openFindingPhotoPicker(finding.id)),
+      ]),
       relatedPhotos.length
         ? el(
             "div",
@@ -741,6 +744,20 @@
           )
         : el("p", { className: "finding-related-photo-empty", text: "この確認項目に紐づく写真はまだありません。" }),
     ]);
+  }
+
+  function openFindingPhotoPicker(findingId) {
+    const input = el("input", {
+      type: "file",
+      accept: "image/*",
+      multiple: true,
+      onchange: (event) => {
+        const files = Array.from(event.target.files || []);
+        event.target.value = "";
+        handlePhotos(files, findingId);
+      },
+    });
+    input.click();
   }
 
   function renderFindingRelatedPhotoItem(photo) {
@@ -3237,7 +3254,8 @@
     render();
   }
 
-  function handlePhotos(files) {
+  function handlePhotos(files, findingId = "") {
+    const assignedFindingId = state.findings.some((finding) => finding.id === findingId) ? findingId : "";
     Array.from(files || []).forEach(async (file) => {
       if (!file.type.startsWith("image/")) return;
       try {
@@ -3254,7 +3272,7 @@
           title: "",
           area: "",
           condition: "",
-          findingId: "",
+          findingId: assignedFindingId,
           finding: "",
           recommendation: "",
           memo: "",
