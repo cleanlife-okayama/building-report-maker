@@ -705,6 +705,9 @@
           button("下へ", "btn small", () => moveItem("findings", index, 1), index === state.findings.length - 1),
           button("削除", "btn danger small", () => {
             state.findings = state.findings.filter((item) => item.id !== finding.id);
+            state.photos.forEach((photo) => {
+              if (photo.findingId === finding.id) photo.findingId = "";
+            });
             saveState();
             render();
           }),
@@ -862,6 +865,7 @@
           photo.src ? el("p", { className: "ai-consultation-notice", text: AI_REVIEW_NOTICE }) : "",
           el("div", { className: "form-grid" }, [
             inputField("写真タイトル", photo.title, (v) => patchPhoto(photo.id, "title", v), "", "text", undefined, textLimit("photoTitle")),
+            photoFindingField(photo),
             inputField("撮影箇所", photo.area, (v) => patchPhoto(photo.id, "area", v), "", "text", "例：西面外壁／キッチン流し台／リビング天井", textLimit("photoAreaOther")),
             selectFieldWithOther("調査結果の目安", photo.condition || "", conditionOptions, (v) => patchPhoto(photo.id, "condition", v), undefined, textLimit("photoConditionOther")),
             textareaField("現在の状態", findingText, (v) => patchPhoto(photo.id, "finding", v), "full", undefined, textLimit("photoFinding")),
@@ -869,6 +873,34 @@
           ]),
         ]),
       ]),
+    ]);
+  }
+
+  function photoFindingField(photo) {
+    const options = state.findings
+      .filter((finding) => finding && finding.id)
+      .map((finding, index) => ({
+        id: finding.id,
+        label: safeText(finding.area).trim() || `確認項目${index + 1}`,
+      }));
+    const selectedId = options.some((option) => option.id === photo.findingId) ? photo.findingId : "";
+    return el("div", { className: "field" }, [
+      el("label", { text: "所属する確認項目" }),
+      el(
+        "select",
+        {
+          value: selectedId,
+          className: selectedId ? "" : "is-empty",
+          onchange: (event) => {
+            patchPhoto(photo.id, "findingId", event.target.value);
+            render();
+          },
+        },
+        [
+          el("option", { value: "", text: "未分類" }),
+          ...options.map((option) => el("option", { value: option.id, text: option.label })),
+        ],
+      ),
     ]);
   }
 
@@ -5291,10 +5323,12 @@
       finding.area = normalizeOptionText(finding.area);
       finding.condition = normalizeConditionText(finding.condition);
     });
+    const validFindingIds = new Set(target.findings.map((finding) => finding.id).filter(Boolean));
     target.photos.forEach((photo) => {
       if (!photo.id) photo.id = createId();
       photo.photoId = photo.photoId || photo.id;
-      photo.findingId = safeText(photo.findingId);
+      const normalizedFindingId = safeText(photo.findingId);
+      photo.findingId = validFindingIds.has(normalizedFindingId) ? normalizedFindingId : "";
       if (!photo.finding && photo.memo) photo.finding = photo.memo;
       if (!photo.recommendation) photo.recommendation = "";
       photo.area = normalizeOptionText(photo.area);
