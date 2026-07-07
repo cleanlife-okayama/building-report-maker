@@ -1774,11 +1774,11 @@
           ]),
         ], "text-section"),
         state.proposal.closing
-          ? reportSection("最後にお伝えしたいこと", [
+          ? reportSection("7. 最後にお伝えしたいこと", [
               el("div", { className: "closing" }, [
                 el("p", { text: state.proposal.closing }),
               ]),
-            ])
+            ], "text-section closing-section")
           : "",
         renderCompanyProfile(),
       ]),
