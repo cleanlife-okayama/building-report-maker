@@ -33,14 +33,17 @@
   const OTHER_VALUE = "__other";
   const priorities = [
     { value: "low", label: "経過観察", short: "経過観察" },
-    { value: "medium", label: "要確認", short: "要確認" },
-    { value: "repair", label: "補修検討", short: "補修検討" },
-    { value: "high", label: "早めに対処", short: "早めに対処" },
-    { value: "urgent", label: "優先対応", short: "優先対応" },
+    { value: "medium", label: "状態確認", short: "状態確認" },
+    { value: "cleaning", label: "清掃・調整", short: "清掃・調整" },
+    { value: "repair", label: "補修を検討", short: "補修を検討" },
+    { value: "replace", label: "交換を検討", short: "交換を検討" },
+    { value: "high", label: "早めに対応", short: "早めに対応" },
+    { value: "urgent_review", label: "早急な対応を検討", short: "早急な対応を検討" },
+    { value: "urgent", label: "優先して対応", short: "優先して対応" },
   ];
 
   const areaOptions = ["外壁", "屋根", "シーリング（目地の防水材）", "ベランダ防水", "雨樋", "窓まわり", "基礎", "付帯部（雨樋・破風など）", "その他"];
-  const conditionOptions = ["良好", "経過観察", "軽微な劣化", "劣化あり", "補修推奨", "早期対応推奨", "その他"];
+  const conditionOptions = ["問題なし", "要確認", "軽微な劣化", "経年劣化が見られる", "劣化・不具合が見られる", "使用上の支障あり", "安全面の確認が必要"];
   const projectOptions = ["外壁塗装", "屋根塗装", "防水工事", "雨漏り確認", "美装・補修", "リフォーム", "節電ガラスコート", "その他"];
   const buildingTypeOptions = ["戸建て", "アパート", "店舗", "倉庫", "事務所", "その他"];
   const surveyTimeOptions = createTimeOptions();
@@ -221,14 +224,17 @@
     "お客様のご不安・ご相談内容":
       "お客様が気にされていることや、ご希望を書いてください。\n例：雨漏りはしていないが、サビが出ているため今後が心配。\n箇条書きでもOKです。AIが自然な文章へ整えます。",
     全体のまとめ:
-      "今回の確認結果とおすすめの方向性をまとめてください。\nお客様が「結局どう考えればよいか」が分かる内容にすると伝わりやすくなります。",
+      "今回の調査結果とおすすめの方向性をまとめてください。\nお客様が「結局どう考えればよいか」が分かる内容にすると伝わりやすくなります。",
     確認した内容:
       "見たままをできるだけ詳しく書いてください。\n箇条書きでもOKです。\n例：床面に濡れあり、タイルの浮き・割れあり、端部にサビあり。",
     "考えられること・注意点":
       "このままにした場合の心配点を書いてください。\n断定できない場合は「可能性があります」でOKです。\n例：雨天時に滑りやすくなる可能性があります。",
     対応の考え方:
       "まず何を確認し、どのような対応を検討するかを書いてください。\n箇条書きでもOKです。\n例：浮きや割れの範囲を確認し、必要に応じて補修を検討します。",
-    この箇所の対応目安: "例：必要に応じて補修したうえで塗装する方法が考えられます。",
+    撮影箇所: "例：西面外壁／キッチン流し台／リビング天井",
+    確認項目名: "例：屋根／外壁／室内現状回復／キッチン流し台／階段踏面",
+    この箇所の対応目安:
+      "どう直したいか、どんな対応がよさそうかを書いてください。箇条書きでもOKです。\n例：雨漏れの原因を確認し、必要に応じて補修を行うことをおすすめします。",
     総合目安:
       "今回の確認結果をもとに、全体としてどのような状態かを書いてください。\n例：塗替えと補修を検討する時期です。",
     緊急性について:
@@ -237,7 +243,8 @@
       "ここは受注につながる大切な欄です。\n確認結果をもとに、どのような対応をおすすめするのかを書いてください。\n箇条書きでもOKです。AIが文章を整えます。",
     表示文: "例：環境影響あり",
     写真タイトル: "例：屋根全体の色あせ",
-    現在の状態: "例：屋根表面に色あせやサビが見られます。雨水が集まりやすい部分には汚れも確認できます。",
+    現在の状態:
+      "見たまま・気づいたことを、できるだけ具体的に書いてください。箇条書きでもOKです。\n例：雨漏れの跡あり。外壁の浮きあり。鉄部にサビが出ている。",
     ご提案内容:
       "今回おすすめする工事内容を短く書いてください。\n例：外部階段の滑り対策を中心にした改修提案",
     おすすめする施工方針:
@@ -245,7 +252,7 @@
     主な工事内容:
       "今回の工事で行う主な内容を書いてください。\nどこを、どのように対応するのかを具体的に書くと、お客様に伝わりやすくなります。",
     "4. あわせておすすめしたい対策":
-      "現地状況を踏まえて、あわせて検討できる対策を書いてください。\n無理な追加提案ではなく、お客様に役立つ内容を分かる範囲で入力してください。",
+      "ここは受注につながる大切な欄です。\n現地を見て気づいた不安点や、今後困りそうなことがあれば、専門家の視点で入力してください。\n無理な追加提案ではなく、お客様に役立つ内容を分かる範囲で書いてください。",
     "5. 工事中に確認が必要なこと":
       "ここは「聞いていない」を防ぐ大切な欄です。\n足場設置後や作業中に追加確認が必要になりそうな点を書いてください。\n分かる範囲でOKです。",
     今後注意しておきたい点:
@@ -297,7 +304,7 @@
       {
         id: createId(),
         area: "外壁",
-        condition: "劣化あり",
+        condition: "劣化・不具合が見られる",
         priority: "high",
         observation: "南面の外壁に色あせと細かなひびが見られました。",
         concern: "状態によっては、雨水が入りやすくなったり、塗膜の傷みが進む可能性があります。",
@@ -625,7 +632,10 @@
       el("div", { className: "form-grid", style: "margin-top:12px" }, [
         textareaField("全体のまとめ", state.summary.overall, (v) => update("summary.overall", v), "full", undefined, textLimit("summaryOverall")),
       ]),
-    ], button("全体のまとめをAIで整える", "btn small section-ai-button", () => copyReportSectionAiPrompt("summary")));
+    ], el("div", { className: "panel-action-row" }, [
+      button("全体のまとめをAIで整える", "btn small section-ai-button", () => copyReportSectionAiPrompt("summary")),
+      button("AI回答を貼り戻す", "btn small", () => openAiReplyImportDialog("summary")),
+    ]));
   }
 
   function renderFindingsPanel() {
@@ -677,7 +687,15 @@
     return el("article", { className: "finding-card" }, [
       el("div", { className: "finding-card-header" }, [
         el("div", { className: "finding-title" }, [
-          selectInlineWithOther(finding.area, areaOptions, (v) => patchFinding(finding.id, "area", v), undefined, textLimit("findingAreaOther")),
+          inputField(
+            "確認項目名",
+            finding.area,
+            (v) => patchFinding(finding.id, "area", v),
+            "",
+            "text",
+            "例：屋根／外壁／室内現状回復／キッチン流し台／階段踏面",
+            textLimit("findingAreaOther"),
+          ),
           priorityBadge(finding.priority),
         ]),
         el("div", { className: "mini-actions" }, [
@@ -694,7 +712,7 @@
       ]),
       el("div", { className: "finding-card-body" }, [
         el("div", { className: "form-grid" }, [
-          selectFieldWithOther("状態", finding.condition, conditionOptions, (v) => patchFinding(finding.id, "condition", v), undefined, textLimit("findingConditionOther")),
+          selectField("状態", finding.condition, conditionOptions, (v) => patchFinding(finding.id, "condition", v)),
           selectField("対応の目安", finding.priority, priorities.map((item) => item.value), (v) => patchFinding(finding.id, "priority", v), priorityLabel),
           textareaField("確認した内容", finding.observation, (v) => patchFinding(finding.id, "observation", v), "full", undefined, textLimit("findingObservation")),
           textareaField("考えられること・注意点", finding.concern, (v) => patchFinding(finding.id, "concern", v), "full", undefined, textLimit("findingConcern")),
@@ -808,18 +826,8 @@
   }
 
   function assessmentItemField(item) {
-    const displayText = safeText(item.displayText || item.labelText);
     return el("div", { className: "assessment-item-field" }, [
       selectField(`程度：${item.label}`, item.value == null ? "" : String(item.value), ["1", "2", "3", "4", "5"], (v) => patchAssessmentItem(item.id, v), (v) => `目安${v}`),
-      countedTextField(
-        "表示文",
-        displayText,
-        (v) => patchAssessmentDisplayText(item.id, v),
-        textLimit("assessmentDisplayText"),
-        "",
-        false,
-        assessmentDisplayPlaceholders[item.id],
-      ),
     ]);
   }
 
@@ -854,7 +862,7 @@
           photo.src ? el("p", { className: "ai-consultation-notice", text: AI_REVIEW_NOTICE }) : "",
           el("div", { className: "form-grid" }, [
             inputField("写真タイトル", photo.title, (v) => patchPhoto(photo.id, "title", v), "", "text", undefined, textLimit("photoTitle")),
-            selectFieldWithOther("撮影箇所", photo.area, areaOptions, (v) => patchPhoto(photo.id, "area", v), undefined, textLimit("photoAreaOther")),
+            inputField("撮影箇所", photo.area, (v) => patchPhoto(photo.id, "area", v), "", "text", "例：西面外壁／キッチン流し台／リビング天井", textLimit("photoAreaOther")),
             selectFieldWithOther("調査結果の目安", photo.condition || "", conditionOptions, (v) => patchPhoto(photo.id, "condition", v), undefined, textLimit("photoConditionOther")),
             textareaField("現在の状態", findingText, (v) => patchPhoto(photo.id, "finding", v), "full", undefined, textLimit("photoFinding")),
             textareaField("この箇所の対応目安", photo.recommendation, (v) => patchPhoto(photo.id, "recommendation", v), "full", undefined, textLimit("photoRecommendation")),
@@ -868,15 +876,18 @@
     return panel("3. おすすめする施工方針", [
       el("div", { className: "form-grid" }, [
         inputField("ご提案内容", state.proposal.planName, (v) => update("proposal.planName", v), "full", "text", undefined, textLimit("proposalPlanName")),
-        textareaField("おすすめする施工方針", state.summary.recommendation, (v) => update("summary.recommendation", v), "full", undefined, textLimit("proposalRecommendation")),
-        textareaField("主な工事内容", state.proposal.scope, (v) => update("proposal.scope", v), "full", undefined, textLimit("proposalScope")),
-        textareaField("4. あわせておすすめしたい対策", state.summary.additionalRecommendations, (v) => update("summary.additionalRecommendations", v), "full", undefined, textLimit("proposalAdditional")),
+        textareaField("おすすめする施工方針", state.summary.recommendation, (v) => update("summary.recommendation", v), "full important-input", undefined, textLimit("proposalRecommendation")),
+        textareaField("主な工事内容", state.proposal.scope, (v) => update("proposal.scope", v), "full important-input", undefined, textLimit("proposalScope")),
+        textareaField("4. あわせておすすめしたい対策", state.summary.additionalRecommendations, (v) => update("summary.additionalRecommendations", v), "full important-input", undefined, textLimit("proposalAdditional")),
         textareaField("5. 工事中に確認が必要なこと", state.proposal.cautions, (v) => update("proposal.cautions", v), "full", undefined, textLimit("proposalCautions")),
         textareaField("今後注意しておきたい点", state.proposal.watchPoint, (v) => update("proposal.watchPoint", v), "full", undefined, textLimit("proposalWatchPoint")),
         textareaField("最後にお伝えしたいこと", state.proposal.closing, (v) => update("proposal.closing", v), "full", undefined, textLimit("proposalClosing")),
       ]),
       renderProcessDiagramEditor(),
-    ], button("施工方針の文章をAIで整える", "btn small proposal-ai-button", copyProposalAiConsultationPrompt));
+    ], el("div", { className: "panel-action-row" }, [
+      button("施工方針の文章をAIで整える", "btn small proposal-ai-button", copyProposalAiConsultationPrompt),
+      button("AI回答を貼り戻す", "btn small", () => openAiReplyImportDialog("proposal")),
+    ]));
   }
 
   function renderAnnotatedImage(photo, imageClassName, alt, fit = "cover") {
@@ -2146,9 +2157,7 @@
     state.photos.forEach((photo, index) => {
       const prefix = `写真${index + 1}`;
       requireValue(photo.title, "調査写真", `${prefix}：写真タイトル`);
-      if (!requireOtherValue(photo.area, "調査写真", `${prefix}：撮影箇所`)) {
-        requireValue(photo.area, "調査写真", `${prefix}：撮影箇所`);
-      }
+      requireValue(photo.area, "調査写真", `${prefix}：撮影箇所`);
       if (!requireOtherValue(photo.condition, "調査写真", `${prefix}：調査結果の目安`)) {
         requireValue(photo.condition, "調査写真", `${prefix}：調査結果の目安`);
       }
@@ -2161,21 +2170,14 @@
     }
     state.findings.forEach((finding, index) => {
       const prefix = `確認項目${index + 1}`;
-      if (!requireOtherValue(finding.area, "確認項目", `${prefix}：確認箇所`)) {
-        requireValue(finding.area, "確認項目", `${prefix}：確認箇所`);
-      }
-      if (!requireOtherValue(finding.condition, "確認項目", `${prefix}：状態`)) {
-        requireValue(finding.condition, "確認項目", `${prefix}：状態`);
-      }
+      requireValue(finding.area, "確認項目", `${prefix}：確認項目名`);
+      requireValue(finding.condition, "確認項目", `${prefix}：状態`);
       requireValue(finding.priority, "確認項目", `${prefix}：対応の目安`);
       requireValue(finding.observation, "確認項目", `${prefix}：確認した内容`);
       requireValue(finding.concern, "確認項目", `${prefix}：考えられること・注意点`);
       requireValue(finding.proposal, "確認項目", `${prefix}：対応の考え方`);
     });
 
-    state.assessment.items.forEach((item) => {
-      recommendValue(item.displayText || item.labelText, "今回の確認結果にもとづく目安", `${item.label}の表示文`);
-    });
     recommendValue(state.assessment.overall, "今回の確認結果にもとづく目安", "総合目安");
     recommendValue(state.assessment.urgency, "今回の確認結果にもとづく目安", "緊急性について");
     recommendValue(state.assessment.policy, "今回の確認結果にもとづく目安", "おすすめの方向性");
@@ -2553,7 +2555,7 @@
             ]),
             el("em", { text: item.value ? `目安${item.value}` : "" }),
           ]),
-          el("strong", { text: assessmentDisplayText(item) }),
+          el("strong", { text: assessmentLevelLabel(String(item.value)) || "" }),
         ]),
       ),
     );
@@ -2587,12 +2589,6 @@
       4: "早めに対処",
       5: "優先対応",
     }[String(value)] || value;
-  }
-
-  function assessmentDisplayText(item) {
-    const customText = safeText(item.displayText || item.labelText);
-    if (customText) return customText;
-    return assessmentLevelLabel(String(item.value)) || "";
   }
 
   function assessmentChartLabelLines(label) {
@@ -2816,6 +2812,8 @@
       photo: "写真カードへAI回答を貼り戻す",
       finding: "確認項目へAI回答を貼り戻す",
       assessment: "目安へAI回答を貼り戻す",
+      proposal: "施工方針へAI回答を貼り戻す",
+      summary: "全体まとめへAI回答を貼り戻す",
     };
     const textarea = el("textarea", {
       className: "ai-reply-import-textarea",
@@ -2922,6 +2920,16 @@
         "建物への影響",
         "維持管理上の注意度",
       ],
+      proposal: [
+        "ご提案内容",
+        "おすすめする施工方針",
+        "主な工事内容",
+        "あわせておすすめしたい対策",
+        "工事中に確認が必要なこと",
+        "今後注意しておきたい点",
+        "最後にお伝えしたいこと",
+      ],
+      summary: ["全体のまとめ"],
     }[targetType] || [];
     const found = new Set(
       entries.map((entry) => safeText(entry.label).split("：")[0].trim()).filter(Boolean),
@@ -2952,6 +2960,16 @@
     } else if (targetType === "assessment") {
       addAssessmentSummaryAiReplyEntries(entries, sections);
       addAssessmentAiReplyEntries(entries, sections);
+    } else if (targetType === "proposal") {
+      addAiReplyField(entries, sections, ["ご提案内容"], "ご提案内容", state.proposal.planName, (value) => { state.proposal.planName = value; });
+      addAiReplyField(entries, sections, ["おすすめする施工方針"], "おすすめする施工方針", state.summary.recommendation, (value) => { state.summary.recommendation = value; });
+      addAiReplyField(entries, sections, ["主な工事内容"], "主な工事内容", state.proposal.scope, (value) => { state.proposal.scope = value; });
+      addAiReplyField(entries, sections, ["あわせておすすめしたい対策"], "あわせておすすめしたい対策", state.summary.additionalRecommendations, (value) => { state.summary.additionalRecommendations = value; });
+      addAiReplyField(entries, sections, ["工事中に確認が必要なこと"], "工事中に確認が必要なこと", state.proposal.cautions, (value) => { state.proposal.cautions = value; });
+      addAiReplyField(entries, sections, ["今後注意しておきたい点"], "今後注意しておきたい点", state.proposal.watchPoint, (value) => { state.proposal.watchPoint = value; });
+      addAiReplyField(entries, sections, ["最後にお伝えしたいこと"], "最後にお伝えしたいこと", state.proposal.closing, (value) => { state.proposal.closing = value; });
+    } else if (targetType === "summary") {
+      addAiReplyField(entries, sections, ["全体のまとめ", "現在の全体まとめ"], "全体のまとめ", state.summary.overall, (value) => { state.summary.overall = value; });
     }
     return entries;
   }
@@ -2987,14 +3005,6 @@
           current: item.value ? `目安${item.value}` : "",
           next: `目安${parsed.value}`,
           apply: () => { item.value = Number(parsed.value); },
-        });
-      }
-      if (!isBlank(parsed.displayText)) {
-        entries.push({
-          label: `${base.label}：表示文`,
-          current: item.displayText || item.labelText || "",
-          next: parsed.displayText,
-          apply: () => { item.displayText = parsed.displayText; },
         });
       }
     });
@@ -3748,7 +3758,7 @@
         state.assessment.overall,
         state.assessment.urgency,
         state.assessment.policy,
-        ...(state.assessment.items || []).flatMap((item) => [item.value, item.displayText || item.labelText]),
+        ...(state.assessment.items || []).map((item) => item.value),
       ].some((value) => !isBlank(value));
     }
     return !isBlank(state.summary.overall);
@@ -3779,25 +3789,18 @@
 
     if (sectionKey === "assessment") {
       const assessmentInputs = (state.assessment.items || [])
-        .map(
-          (item) =>
-            `【目安：${item.label}】\n` +
-            `程度：${item.value ? `目安${item.value}` : "未入力"}\n` +
-            `表示文：${valueOrBlank(item.displayText || item.labelText)}`,
-        )
+        .map((item) => `【目安：${item.label}】\n程度：${item.value ? `目安${item.value}` : "未入力"}`)
         .join("\n\n");
       return (
         commonStart +
-        "今回選択されている6項目の程度は変更せず、各表示文と3つの説明欄を分かりやすく整えてください。「緊急性について」は長文説明欄です。「目安：緊急性」の表示文とは別の欄として扱ってください。\n\n" +
+        "今回選択されている6項目の程度と、3つの説明欄を分かりやすく整えてください。「緊急性について」は長文説明欄です。「目安：緊急性」の程度とは別の欄として扱ってください。\n\n" +
         "【現在の入力内容】\n" +
         `${assessmentInputs}\n\n` +
         `【総合目安】\n${valueOrBlank(state.assessment.overall)}\n\n` +
         `【緊急性について】\n${valueOrBlank(state.assessment.urgency)}\n\n` +
         `【おすすめの方向性】\n${valueOrBlank(state.assessment.policy)}\n` +
         "\n\n【回答形式】\n回答は次の9つの見出しだけにしてください。見出し名は変更せず、6項目の程度は現在の値をそのまま回答してください。\n\n" +
-        `${assessmentAiHeadings
-          .map((item) => `【目安：${item.label}】\n程度：目安1〜目安5\n表示文：16字以内`)
-          .join("\n\n")}\n\n` +
+        `${assessmentAiHeadings.map((item) => `【目安：${item.label}】\n程度：目安1〜目安5`).join("\n\n")}\n\n` +
         "【総合目安】\n本文\n\n" +
         "【緊急性について】\n本文\n\n" +
         "【おすすめの方向性】\n本文\n\n" +
@@ -3805,7 +3808,6 @@
         "【総合目安】120字以内\n" +
         "【緊急性について】160字以内\n" +
         "【おすすめの方向性】200字以内\n" +
-        "【目安：各項目】表示文は16字以内\n" +
         "各欄の文字数目安内で、現在の評価と対応時期が分かりやすく伝わる文章にしてください。\n\n" +
         AI_OUTPUT_SAFETY_GUIDANCE
       );
@@ -4661,27 +4663,15 @@
       pdfTextField("assessmentOverall", state.assessment.overall),
       pdfTextField("assessmentUrgency", state.assessment.urgency),
       pdfTextField("assessmentPolicy", state.assessment.policy),
-      ...state.assessment.items.map((item) => ({
-        label: `${item.label}の表示文`,
-        value: item.displayText || item.labelText || "",
-        limit: textLimit("assessmentDisplayText"),
-      })),
       ...state.findings.flatMap((finding, index) => [
-        isOtherValue(finding.area, areaOptions)
-          ? pdfTextField("findingAreaOther", finding.area, `確認項目${index + 1}`)
-          : null,
-        isOtherValue(finding.condition, conditionOptions)
-          ? pdfTextField("findingConditionOther", finding.condition, `確認項目${index + 1}`)
-          : null,
+        pdfTextField("findingAreaOther", finding.area, `確認項目${index + 1}`),
         pdfTextField("findingObservation", finding.observation, `確認項目${index + 1}`),
         pdfTextField("findingConcern", finding.concern, `確認項目${index + 1}`),
         pdfTextField("findingProposal", finding.proposal, `確認項目${index + 1}`),
       ]),
       ...state.photos.flatMap((photo, index) => [
         pdfTextField("photoTitle", photo.title, `写真${index + 1}`),
-        isOtherValue(photo.area, areaOptions)
-          ? pdfTextField("photoAreaOther", photo.area, `写真${index + 1}`)
-          : null,
+        pdfTextField("photoAreaOther", photo.area, `写真${index + 1}`),
         isOtherValue(photo.condition, conditionOptions)
           ? pdfTextField("photoConditionOther", photo.condition, `写真${index + 1}`)
           : null,
@@ -5371,8 +5361,15 @@
       "今後の参考": "low",
       "経過観察": "low",
       "要確認": "medium",
+      "状態確認": "medium",
+      "清掃・調整": "cleaning",
       "補修検討": "repair",
+      "補修を検討": "repair",
+      "交換を検討": "replace",
+      "早めに対応": "high",
+      "早急な対応を検討": "urgent_review",
       "優先対応": "urgent",
+      "優先して対応": "urgent",
     };
     if (!value) return "";
     if (priorities.some((item) => item.value === value)) return value;
@@ -5394,8 +5391,11 @@
     const map = {
       "軽い傷み": "軽微な劣化",
       "軽度の傷み": "軽微な劣化",
-      "傷みあり": "劣化あり",
-      "要確認": "",
+      "傷みあり": "劣化・不具合が見られる",
+      "劣化あり": "劣化・不具合が見られる",
+      "補修推奨": "劣化・不具合が見られる",
+      "早期対応推奨": "安全面の確認が必要",
+      "良好": "問題なし",
       "写真だけでは判断しにくい": "",
       "写真では判断しにくい": "",
     };

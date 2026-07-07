@@ -706,6 +706,13 @@ textarea:focus {
   color: #7a5200;
 }
 
+.priority.cleaning,
+.priority.replace,
+.priority.urgent_review {
+  background: #fff3d8;
+  color: #7a5200;
+}
+
 .priority.low {
   background: var(--ok-soft);
   color: var(--ok);
@@ -908,6 +915,12 @@ textarea:focus {
 .character-count.over,
 .character-count-message.over {
   color: var(--danger);
+}
+
+.field.important-input textarea.is-empty,
+.field.important-input input.is-empty {
+  background: #fff9e8;
+  border-color: rgba(150, 95, 18, 0.32);
 }
 
 .counted-control {
