@@ -721,6 +721,37 @@
           textareaField("考えられること・注意点", finding.concern, (v) => patchFinding(finding.id, "concern", v), "full", undefined, textLimit("findingConcern")),
           textareaField("対応の考え方", finding.proposal, (v) => patchFinding(finding.id, "proposal", v), "full", undefined, textLimit("findingProposal")),
         ]),
+        renderFindingRelatedPhotos(finding),
+      ]),
+    ]);
+  }
+
+  function renderFindingRelatedPhotos(finding) {
+    const relatedPhotos = state.photos.filter((photo) => photo.findingId === finding.id);
+    return el("div", { className: "finding-related-photos" }, [
+      el("div", { className: "finding-related-photos-header" }, [
+        el("strong", { text: "関連写真" }),
+        relatedPhotos.length ? el("span", { text: `${relatedPhotos.length}枚` }) : "",
+      ]),
+      relatedPhotos.length
+        ? el(
+            "div",
+            { className: "finding-related-photo-list" },
+            relatedPhotos.map((photo) => renderFindingRelatedPhotoItem(photo)),
+          )
+        : el("p", { className: "finding-related-photo-empty", text: "この確認項目に紐づく写真はまだありません。" }),
+    ]);
+  }
+
+  function renderFindingRelatedPhotoItem(photo) {
+    return el("div", { className: "finding-related-photo-item" }, [
+      photo.src
+        ? renderAnnotatedImage(photo, "finding-related-photo-thumb", photo.title || photo.area || "関連写真", "cover")
+        : el("div", { className: "finding-related-photo-thumb finding-related-photo-missing", text: "写真" }),
+      el("div", { className: "finding-related-photo-copy" }, [
+        el("strong", { text: photo.title || photo.area || "写真タイトル未入力" }),
+        photo.area ? el("span", { text: photo.area }) : "",
+        photo.condition ? el("em", { text: photo.condition }) : "",
       ]),
     ]);
   }

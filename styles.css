@@ -723,6 +723,115 @@ textarea:focus {
   color: #fff;
 }
 
+.finding-related-photos {
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid rgba(139, 30, 36, 0.12);
+  border-radius: 8px;
+  background: linear-gradient(180deg, #fffdfd, #fff8f8);
+}
+
+.finding-related-photos-header {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 8px;
+  color: var(--brand);
+}
+
+.finding-related-photos-header strong {
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.finding-related-photos-header span {
+  color: #7a7475;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.finding-related-photo-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 8px;
+  max-height: 230px;
+  overflow: auto;
+  padding-right: 2px;
+}
+
+.finding-related-photo-item {
+  display: grid;
+  grid-template-columns: 74px minmax(0, 1fr);
+  gap: 9px;
+  align-items: center;
+  padding: 8px;
+  border: 1px solid rgba(139, 30, 36, 0.1);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.finding-related-photo-thumb {
+  width: 74px;
+  aspect-ratio: 4 / 3;
+  border-radius: 6px;
+  object-fit: cover;
+  background: #ece7e4;
+}
+
+.finding-related-photo-item .annotated-photo-image {
+  width: 74px;
+  aspect-ratio: 4 / 3;
+  border-radius: 6px;
+}
+
+.finding-related-photo-missing {
+  display: grid;
+  place-items: center;
+  color: #8f8586;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.finding-related-photo-copy {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.finding-related-photo-copy strong,
+.finding-related-photo-copy span,
+.finding-related-photo-copy em {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.finding-related-photo-copy strong {
+  color: #2e292a;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.finding-related-photo-copy span {
+  color: #5f595a;
+  font-size: 11px;
+}
+
+.finding-related-photo-copy em {
+  color: var(--brand);
+  font-size: 11px;
+  font-style: normal;
+  font-weight: 800;
+}
+
+.finding-related-photo-empty {
+  margin: 0;
+  color: #827a7b;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
 .photo-drop {
   position: relative;
   display: grid;
