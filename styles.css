@@ -3208,10 +3208,12 @@ textarea:focus {
 
 .toast {
   position: fixed;
-  right: 18px;
-  bottom: 18px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
   z-index: 60;
-  max-width: min(560px, calc(100vw - 36px));
+  width: max-content;
+  max-width: min(560px, calc(100vw - 32px));
   padding: 12px 14px;
   border-radius: 8px;
   background: var(--brand);
