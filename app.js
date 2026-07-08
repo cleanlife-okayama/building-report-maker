@@ -3835,6 +3835,54 @@
     );
   }
 
+  function buildProposalFindingsAiReference() {
+    if (!state.findings.length) {
+      return "【確認項目・関連写真の参考情報】\n確認項目はまだ入力されていません。施工方針セクションに入力済みの内容をもとに文章を整えてください。";
+    }
+    const valueOrBlank = (value) => truncateAiReferenceText(value) || "未入力";
+    let usedPhotoCount = 0;
+    const maxPhotosTotal = 10;
+    const maxPhotosPerFinding = 3;
+    const maxFindings = 8;
+    const findingBlocks = state.findings.slice(0, maxFindings).map((finding, findingIndex) => {
+      const relatedPhotos = state.photos.filter((photo) => photo.findingId === finding.id);
+      const remainingPhotoSlots = Math.max(0, maxPhotosTotal - usedPhotoCount);
+      const photosToUse = relatedPhotos.slice(0, Math.min(maxPhotosPerFinding, remainingPhotoSlots));
+      usedPhotoCount += photosToUse.length;
+      const photoLines = photosToUse.map((photo, photoIndex) => {
+        return [
+          `関連写真${photoIndex + 1}`,
+          `写真タイトル：${valueOrBlank(photo.title)}`,
+          `撮影箇所：${valueOrBlank(aiConsultationValue(photo.area))}`,
+          `調査結果の目安：${valueOrBlank(aiConsultationValue(photo.condition))}`,
+          `現在の状態：${valueOrBlank(photo.finding || photo.memo)}`,
+          `この箇所の対応目安：${valueOrBlank(photo.recommendation)}`,
+        ].join("\n");
+      });
+      if (relatedPhotos.length > photosToUse.length) {
+        photoLines.push(`ほか${relatedPhotos.length - photosToUse.length}枚の関連写真があります。`);
+      }
+      return [
+        `確認項目${findingIndex + 1}`,
+        `確認項目名：${valueOrBlank(aiConsultationValue(finding.area))}`,
+        `状態：${valueOrBlank(aiConsultationValue(finding.condition))}`,
+        `対応の目安：${valueOrBlank(priorityLabel(finding.priority))}`,
+        `確認した内容：${valueOrBlank(finding.observation)}`,
+        `考えられること・注意点：${valueOrBlank(finding.concern)}`,
+        `対応の考え方：${valueOrBlank(finding.proposal)}`,
+        photoLines.length ? ["関連写真", ...photoLines].join("\n") : "関連写真：この確認項目に紐づく写真はまだありません。",
+      ].join("\n");
+    });
+    if (state.findings.length > maxFindings) {
+      findingBlocks.push(`ほか${state.findings.length - maxFindings}件の確認項目があります。`);
+    }
+    return (
+      "【確認項目・関連写真の参考情報】\n" +
+      "以下は、施工方針を整えるための参考情報です。確認項目と関連写真の内容を踏まえてください。ただし、回答見出しは増やさず、施工方針セクションの回答形式だけで返してください。\n" +
+      findingBlocks.join("\n\n")
+    );
+  }
+
   function buildFindingAiConsultationPrompt(finding) {
     const valueOrBlank = (value) => safeText(value).trim() || "未入力";
     const area = aiConsultationValue(finding.area) || "未入力";
@@ -3945,6 +3993,30 @@
     );
   }
 
+  function buildProposalPrimaryAiConsultationPrompt() {
+    const valueOrBlank = (value) => safeText(value).trim() || "未入力";
+    return (
+      "【AI相談用プロンプト】\n\n" +
+      "これはアプリ機能の一つです。作成した文章は、建物調査報告書メーカーの施工方針セクションへコピーして使用します。前置きや感想、余計な補足説明はできるだけ省き、そのまま貼り付けやすい形で回答してください。\n\n" +
+      "この相談文の目的は、新しく診断することではありません。担当者が入力した施工方針と、確認項目・関連写真の参考情報をもとに、一般のお客様にも伝わる自然な表現へ整えることです。\n\n" +
+      AI_WRITING_GUIDANCE +
+      "\n\n" +
+      "回答は必ず次の3つの見出しだけにしてください。見出し名は変更せず、ほかの見出しや総評は追加しないでください。\n\n" +
+      "【ご提案内容】\n本文\n\n" +
+      "【おすすめする施工方針】\n本文\n\n" +
+      "【主な工事内容】\n本文\n\n" +
+      "【現在の施工方針入力内容】\n" +
+      `ご提案内容：${valueOrBlank(state.proposal.planName)}\n` +
+      `おすすめする施工方針：${valueOrBlank(state.summary.recommendation)}\n` +
+      `主な工事内容：${valueOrBlank(state.proposal.scope)}\n\n` +
+      "【文字数の目安】\n" +
+      "【ご提案内容】60字以内\n" +
+      "【おすすめする施工方針】260字以内\n" +
+      "【主な工事内容】220字以内\n" +
+      "各欄の文字数目安内で、必要な説明は省略しすぎず、お客様が納得して判断できる文章にしてください。短くまとめることよりも、分かりやすく伝わることを優先してください。"
+    );
+  }
+
   async function copyProposalAiConsultationPrompt() {
     const hasProposalMaterial = [
       state.proposal.planName,
@@ -3962,7 +4034,7 @@
       );
       return;
     }
-    const prompt = buildProposalAiConsultationPrompt();
+    const prompt = `${buildProposalPrimaryAiConsultationPrompt()}\n\n${buildProposalFindingsAiReference()}`;
     if (await copyPlainText(prompt)) {
       showToast(
         "施工方針のAI相談文をコピーしました。\n" +
