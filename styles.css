@@ -4155,11 +4155,17 @@ textarea:focus {
   .photo-report {
     page-break-inside: avoid;
     break-inside: avoid;
-    min-height: 121mm;
+    width: 85%;
+    min-height: 108mm;
     height: auto;
-    margin: 0 0 4mm;
-    overflow: visible;
-    box-shadow: none;
+    margin: 4mm auto 10mm;
+    overflow: hidden;
+    border-color: rgba(139, 30, 36, 0.34);
+    border-right-color: rgba(139, 30, 36, 0.46);
+    background: #fff;
+    box-shadow:
+      0 1.1mm 2.8mm rgba(31, 31, 31, 0.055),
+      0 0.3mm 1mm rgba(139, 30, 36, 0.04);
     border-radius: 3mm;
   }
 
@@ -4168,7 +4174,7 @@ textarea:focus {
   }
 
   .grouped-photo-report {
-    min-height: 112mm;
+    min-height: 96mm;
     height: auto;
   }
 
@@ -4229,9 +4235,7 @@ textarea:focus {
 
   .photo-caption {
     padding: 2mm 3.4mm 2.2mm;
-    background:
-      linear-gradient(135deg, rgba(139, 30, 36, 0.03), transparent 45%),
-      linear-gradient(180deg, #fff 0%, #fffdfb 100%);
+    background: #fff;
   }
 
   .photo-detail-list {
@@ -4243,7 +4247,7 @@ textarea:focus {
   .photo-detail-list div {
     grid-template-columns: 26mm minmax(0, 1fr);
     gap: 2mm;
-    padding-top: 0.7mm;
+    padding-top: 0.9mm;
   }
 
   .photo-detail-list div:nth-child(n + 3) {
@@ -4257,7 +4261,7 @@ textarea:focus {
 
   .photo-detail-list dd {
     font-size: 9.1pt;
-    line-height: 1.42;
+    line-height: 1.58;
   }
 
   .assessment-report {
