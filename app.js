@@ -3397,10 +3397,11 @@
     let ctx = canvas.getContext("2d");
     if (!ctx) throw new Error("Canvas is not available");
     ctx.font = '500 22px "Yu Gothic", "Meiryo", sans-serif';
-    const promptLines = canvasWrappedLines(ctx, AI_PHOTO_PROMPT, 1424);
+    const promptText = buildPhotoAiPromptText(photo);
+    const promptLines = canvasWrappedLines(ctx, promptText, 1424);
     const promptHeight = 108 + Math.max(1, promptLines.length) * 34;
     const photoY = 132 + promptHeight + 30;
-    const photoHeight = 500;
+    const photoHeight = 620;
     const longFieldY = photoY + photoHeight + 30;
     const longFieldHeight = 420;
     canvas.height = longFieldY + longFieldHeight + 42;
@@ -3432,7 +3433,7 @@
     drawAiPromptCard(
       ctx,
       "AI相談用プロンプト",
-      AI_PHOTO_PROMPT,
+      promptText,
       58,
       132,
       1484,
@@ -3449,6 +3450,18 @@
     drawRoundedPanel(ctx, infoRect.x, infoRect.y, infoRect.width, infoRect.height, 18, "#ffffff", "#d7c9c7");
     let infoY = infoRect.y + 52;
     infoY = drawAiConsultationField(ctx, "写真タイトル", photo.title, infoRect.x + 34, infoY, infoRect.width - 68, 2);
+    infoY += 12;
+    drawCanvasRule(ctx, infoRect.x + 34, infoY, infoRect.x + infoRect.width - 34, "#ead8d6");
+    infoY += 32;
+    infoY = drawAiConsultationField(
+      ctx,
+      "所属する確認項目",
+      photoFindingName(photo),
+      infoRect.x + 34,
+      infoY,
+      infoRect.width - 68,
+      2,
+    );
     infoY += 12;
     drawCanvasRule(ctx, infoRect.x + 34, infoY, infoRect.x + infoRect.width - 34, "#ead8d6");
     infoY += 32;
@@ -3749,10 +3762,27 @@
     window.setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
+  function photoFindingName(photo) {
+    const findingId = safeText(photo?.findingId).trim();
+    const finding = state.findings.find((item) => item.id === findingId);
+    return safeText(finding?.area).trim() || "未分類";
+  }
+
+  function buildPhotoAiPromptText(photo) {
+    return (
+      AI_PHOTO_PROMPT +
+      "\n\n【参考情報】\n" +
+      `所属する確認項目：${photoFindingName(photo)}\n` +
+      "この情報は写真の文脈を理解するための参考です。回答欄としては追加せず、回答見出しは従来通り次の5項目だけにしてください。\n" +
+      "【写真タイトル】\n【撮影箇所】\n【調査結果の目安】\n【現在の状態】\n【この箇所の対応目安】"
+    );
+  }
+
   function buildPhotoAiConsultationPrompt(photo) {
     return (
-      `【AI相談用プロンプト】\n\n${AI_PHOTO_PROMPT}\n\n` +
+      `【AI相談用プロンプト】\n\n${buildPhotoAiPromptText(photo)}\n\n` +
       "【現在の入力内容】\n" +
+      `【所属する確認項目】\n${photoFindingName(photo)}\n\n` +
       `【写真タイトル】\n${safeText(photo.title).trim() || "未入力"}\n\n` +
       `【撮影箇所】\n${aiConsultationValue(photo.area) || "未入力"}\n\n` +
       `【調査結果の目安】\n${aiConsultationValue(photo.condition) || "未入力"}\n\n` +
