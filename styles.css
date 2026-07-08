@@ -2862,8 +2862,8 @@ textarea:focus {
 
 .assessment-scale-head {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 8px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4px;
   align-items: center;
   padding-bottom: 8px;
   border-bottom: 1px solid rgba(139, 30, 36, 0.45);
@@ -2879,6 +2879,7 @@ textarea:focus {
 .assessment-scale b {
   display: grid;
   place-items: center;
+  flex: 0 0 auto;
   width: 24px;
   height: 24px;
   border-radius: 999px;
@@ -2896,13 +2897,16 @@ textarea:focus {
 }
 
 .assessment-scale span {
+  min-width: 0;
   color: #333;
   font-size: 15px;
   font-weight: 800;
   line-height: 1.35;
+  overflow-wrap: anywhere;
 }
 
 .assessment-scale em {
+  justify-self: end;
   color: var(--brand);
   font-size: 15px;
   font-style: normal;
@@ -4151,9 +4155,10 @@ textarea:focus {
   .photo-report {
     page-break-inside: avoid;
     break-inside: avoid;
-    height: 121mm;
+    min-height: 121mm;
+    height: auto;
     margin: 0 0 4mm;
-    overflow: hidden;
+    overflow: visible;
     box-shadow: none;
     border-radius: 3mm;
   }
@@ -4163,7 +4168,8 @@ textarea:focus {
   }
 
   .grouped-photo-report {
-    height: 112mm;
+    min-height: 112mm;
+    height: auto;
   }
 
   .photo-report:nth-child(2n) {

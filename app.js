@@ -139,7 +139,7 @@
     projectClientName: { label: "お客様名", maxLength: 40, warningRatio: 0.85 },
     projectAddress: { label: "住所", maxLength: 80, warningRatio: 0.85 },
     projectBuildingTypeOther: { label: "建物種別の自由入力", maxLength: 30, warningRatio: 0.85 },
-    projectTypeOther: { label: "相談内容の自由入力", maxLength: 90, warningRatio: 0.85 },
+    projectTypeOther: { label: "ご相談内容の自由入力", maxLength: 90, warningRatio: 0.85 },
     projectWeather: { label: "天気", maxLength: 20, warningRatio: 0.85 },
     projectPurpose: { label: "調査目的", maxLength: 120, warningRatio: 0.85 },
     customerConcern: { label: "お客様のご不安・ご相談内容", maxLength: 260, warningRatio: 0.85 },
@@ -608,7 +608,7 @@
         selectField("調査日時（時刻）", state.project.surveyTime, surveyTimeOptions, (v) => update("project.surveyTime", v)),
         inputField("担当者", state.project.inspector, (v) => update("project.inspector", v)),
         selectFieldWithOther("建物種別", state.project.buildingType, buildingTypeOptions, (v) => update("project.buildingType", v), undefined, textLimit("projectBuildingTypeOther")),
-        selectFieldWithOther("相談内容", state.project.projectType, projectOptions, (v) => update("project.projectType", v), undefined, textLimit("projectTypeOther")),
+        selectFieldWithOther("ご相談内容", state.project.projectType, projectOptions, (v) => update("project.projectType", v), undefined, textLimit("projectTypeOther")),
         inputField("天気", state.project.weather, (v) => update("project.weather", v), "", "text", undefined, textLimit("projectWeather")),
         inputField("調査目的", state.project.purpose, (v) => update("project.purpose", v), "full", "text", undefined, textLimit("projectPurpose")),
       ]),
@@ -1834,7 +1834,7 @@
             companyContactMeta(),
             meta("住所", state.project.address),
             meta("建物", state.project.buildingType),
-            meta("相談内容", state.project.projectType),
+            meta("ご相談内容", state.project.projectType),
             meta("天気", state.project.weather),
             meta("調査目的", state.project.purpose),
           ]),
@@ -2325,8 +2325,8 @@
     requireValue(state.project.address, "基本情報", "現場住所");
     requireValue(state.project.surveyDate, "基本情報", "調査日");
     requireValue(state.project.inspector, "基本情報", "担当者");
-    if (!requireOtherValue(state.project.projectType, "基本情報", "相談内容")) {
-      requireValue(state.project.projectType, "基本情報", "相談内容");
+    if (!requireOtherValue(state.project.projectType, "基本情報", "ご相談内容")) {
+      requireValue(state.project.projectType, "基本情報", "ご相談内容");
     }
     requireOtherValue(state.project.buildingType, "基本情報", "建物種別");
     requireValue(state.project.purpose, "基本情報", "調査目的");
