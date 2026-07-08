@@ -1821,6 +1821,7 @@
               className: "report-lead cover-lead",
               text: `${state.project.clientName || "お客様"}へ、現地で確認した内容を分かりやすく整理しました。必要と思われる対応と注意点を、判断しやすい形でお伝えします。`,
             }),
+            renderCoverConcernCard(),
             el("div", { className: "cover-photo" }, [
               firstPhoto && firstPhoto.src
                 ? renderAnnotatedImage(firstPhoto, "", firstPhoto.title || "現場写真", "cover")
@@ -1839,39 +1840,36 @@
           ]),
         ]),
         renderAssessmentReport(),
-        reportSection("1. お客様のご不安・ご相談内容", [
-          reportTextBox("ご相談内容", state.summary.customerConcern),
-        ]),
-        reportSection("2. 調査写真・確認項目ごとの確認結果", [
+        reportSection("1. 調査写真・確認項目ごとの確認結果", [
           ...findingPhotoReportChildren,
         ], "photo-section"),
-        reportSection("3. おすすめする施工方針", [
+        reportSection("2. おすすめする施工方針", [
           optionalReportTextBox("ご提案内容", state.proposal.planName),
           optionalReportTextBox("おすすめする施工方針", state.summary.recommendation),
           optionalReportTextBox("主な工事内容", state.proposal.scope),
           renderRepairProcessCard(),
         ], "text-section plan-section"),
         state.summary.additionalRecommendations
-          ? reportSection("4. あわせておすすめしたい対策", [
+          ? reportSection("3. あわせておすすめしたい対策", [
               reportTextBox("あわせておすすめしたい対策", state.summary.additionalRecommendations),
             ], "text-section additional-section")
           : "",
         state.proposal.cautions || state.proposal.watchPoint
-          ? reportSection("5. 工事中に確認が必要なこと", [
+          ? reportSection("4. 工事中に確認が必要なこと", [
               el("div", { className: "timeline" }, [
                 state.proposal.cautions ? timelineItem("工事中に確認が必要なこと", state.proposal.cautions) : "",
                 state.proposal.watchPoint ? timelineItem("今後注意しておきたい点", state.proposal.watchPoint) : "",
               ]),
             ], "text-section attention-section")
           : "",
-        reportSection("6. 全体まとめ", [
+        reportSection("5. 全体まとめ", [
           el("div", { className: "report-box" }, [
             el("span", { className: "report-section-label", text: "総合所見" }),
             el("p", { className: "report-copy", text: safeText(state.summary.overall || state.proposal.totalOpinion) }),
           ]),
         ], "text-section"),
         state.proposal.closing
-          ? reportSection("7. 最後にお伝えしたいこと", [
+          ? reportSection("6. 最後にお伝えしたいこと", [
               el("div", { className: "closing" }, [
                 el("p", { text: state.proposal.closing }),
               ]),
@@ -1886,6 +1884,15 @@
     const dateText = formatDate(state.project.surveyDate);
     const text = [state.project.workName, dateText].map(safeText).filter(Boolean).join(" / ");
     return text ? el("div", { className: "print-running-meta", text }) : "";
+  }
+
+  function renderCoverConcernCard() {
+    const concern = safeText(state.summary.customerConcern).trim();
+    if (!concern) return "";
+    return el("div", { className: "cover-concern-card" }, [
+      el("span", { className: "cover-concern-label", text: "今回のご相談内容" }),
+      el("p", { text: concern }),
+    ]);
   }
 
   function isGroupedReportLayout() {

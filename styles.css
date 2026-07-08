@@ -1813,7 +1813,8 @@ textarea:focus {
   grid-area: visual;
   grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr);
   grid-template-areas:
-    "lead photo";
+    "lead photo"
+    "concern photo";
   gap: 20px 28px;
   width: 100%;
 }
@@ -1870,6 +1871,36 @@ textarea:focus {
   align-self: start;
   max-width: 28em;
   padding-top: 2px;
+}
+
+.cover-concern-card {
+  grid-area: concern;
+  align-self: start;
+  margin-top: 2px;
+  padding: 14px 16px;
+  border: 1px solid rgba(139, 30, 36, 0.16);
+  border-radius: 10px;
+  background:
+    linear-gradient(135deg, rgba(139, 30, 36, 0.08), transparent 48%),
+    rgba(255, 255, 255, 0.86);
+  box-shadow: 0 14px 28px rgba(42, 31, 31, 0.08);
+}
+
+.cover-concern-label {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+}
+
+.cover-concern-card p {
+  margin: 0;
+  color: #3f393a;
+  font-size: 14px;
+  line-height: 1.78;
+  overflow-wrap: break-word;
 }
 
 .cover-info {
@@ -2368,6 +2399,8 @@ textarea:focus {
   color: var(--brand);
   font-size: 17px;
   line-height: 1.45;
+  break-after: avoid;
+  page-break-after: avoid;
 }
 
 .grouped-photo-report-grid {
@@ -3548,7 +3581,8 @@ textarea:focus {
     grid-area: visual;
     grid-template-columns: minmax(0, 0.76fr) minmax(0, 1.24fr);
     grid-template-areas:
-      "lead photo";
+      "lead photo"
+      "concern photo";
     gap: 5.4mm 7mm;
     width: 100%;
   }
@@ -3602,6 +3636,24 @@ textarea:focus {
   .cover-lead {
     grid-area: lead;
     padding-top: 0.5mm;
+  }
+
+  .cover-concern-card {
+    grid-area: concern;
+    margin-top: 0;
+    padding: 3.2mm 3.6mm;
+    border-radius: 3mm;
+    box-shadow: none;
+  }
+
+  .cover-concern-label {
+    margin-bottom: 1.5mm;
+    font-size: 8.5pt;
+  }
+
+  .cover-concern-card p {
+    font-size: 9.8pt;
+    line-height: 1.7;
   }
 
   .cover-info {
@@ -3908,6 +3960,8 @@ textarea:focus {
     padding-left: 2.4mm;
     border-left-width: 0.8mm;
     font-size: 12pt;
+    break-after: avoid;
+    page-break-after: avoid;
   }
 
   .photo-section {
