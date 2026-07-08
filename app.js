@@ -3844,7 +3844,22 @@
     const maxPhotosTotal = 10;
     const maxPhotosPerFinding = 3;
     const maxFindings = 8;
-    const findingBlocks = state.findings.slice(0, maxFindings).map((finding, findingIndex) => {
+    const hasMeaningfulFindingReference = (finding) => {
+      const hasRelatedPhotos = state.photos.some((photo) => photo.findingId === finding.id);
+      return (
+        hasRelatedPhotos ||
+        !isBlank(finding.condition) ||
+        !isBlank(finding.priority) ||
+        !isBlank(finding.observation) ||
+        !isBlank(finding.concern) ||
+        !isBlank(finding.proposal)
+      );
+    };
+    const referenceFindings = state.findings.filter(hasMeaningfulFindingReference);
+    if (!referenceFindings.length) {
+      return "【確認項目・関連写真の参考情報】\n施工方針AIの参考情報に含める入力済みの確認項目や関連写真はまだありません。施工方針セクションに入力済みの内容をもとに文章を整えてください。";
+    }
+    const findingBlocks = referenceFindings.slice(0, maxFindings).map((finding, findingIndex) => {
       const relatedPhotos = state.photos.filter((photo) => photo.findingId === finding.id);
       const remainingPhotoSlots = Math.max(0, maxPhotosTotal - usedPhotoCount);
       const photosToUse = relatedPhotos.slice(0, Math.min(maxPhotosPerFinding, remainingPhotoSlots));
@@ -3873,8 +3888,8 @@
         photoLines.length ? ["関連写真", ...photoLines].join("\n") : "関連写真：この確認項目に紐づく写真はまだありません。",
       ].join("\n");
     });
-    if (state.findings.length > maxFindings) {
-      findingBlocks.push(`ほか${state.findings.length - maxFindings}件の確認項目があります。`);
+    if (referenceFindings.length > maxFindings) {
+      findingBlocks.push(`ほか${referenceFindings.length - maxFindings}件の確認項目があります。`);
     }
     return (
       "【確認項目・関連写真の参考情報】\n" +
