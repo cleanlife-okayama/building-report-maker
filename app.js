@@ -1738,7 +1738,7 @@
     const issues = collectReportInputIssues();
     const requiredIssues = issues.filter((issue) => issue.level === "required");
     const recommendedIssues = issues.filter((issue) => issue.level === "recommended");
-    return panel("品質チェック", [
+    return panel("入力チェック", [
       el("div", { className: "quality-issue-summary" }, [
         el("div", { className: `quality-count ${requiredIssues.length ? "required" : "ok"}` }, [
           el("span", { text: "要確認" }),
@@ -1933,25 +1933,22 @@
   }
 
   function renderGroupedFindingPhotoReportContent() {
-    const validFindingIds = new Set(state.findings.map((finding) => finding.id).filter(Boolean));
     const blocks = state.findings.map((finding) => {
       const relatedPhotos = state.photos.filter((photo) => photo.findingId === finding.id);
       return el("div", { className: "grouped-finding-report-block" }, [
         renderGroupedFindingSummary(finding),
+        relatedPhotos.length ? renderRelatedPhotoDigest(relatedPhotos) : "",
         relatedPhotos.length ? renderGroupedPhotoList("関連写真", relatedPhotos) : "",
       ]);
     });
-    const unclassifiedPhotos = state.photos.filter((photo) => !photo.findingId || !validFindingIds.has(photo.findingId));
-    if (unclassifiedPhotos.length) {
-      blocks.push(
-        el("div", { className: "grouped-finding-report-block unclassified-photo-report-block" }, [
-          renderGroupedPhotoList("未分類写真", unclassifiedPhotos),
-        ]),
-      );
-    }
     return blocks.length
       ? el("div", { className: "grouped-finding-photo-report" }, blocks)
       : el("div", { className: "empty", text: "確認項目と写真はまだ入力されていません" });
+  }
+
+  function getUnclassifiedPhotos() {
+    const validFindingIds = new Set(state.findings.map((finding) => finding.id).filter(Boolean));
+    return state.photos.filter((photo) => !photo.findingId || !validFindingIds.has(photo.findingId));
   }
 
   function renderGroupedFindingSummary(finding) {
@@ -1963,6 +1960,33 @@
         findingTopic("考えられること", finding.concern),
         findingTopic("対応の考え方", finding.proposal),
       ]),
+    ]);
+  }
+
+  function renderRelatedPhotoDigest(photos) {
+    const maxDigestPhotos = 8;
+    const digestPhotos = photos.slice(0, maxDigestPhotos);
+    const remainingCount = Math.max(photos.length - maxDigestPhotos, 0);
+    return el("div", { className: "related-photo-digest" }, [
+      el("div", { className: "related-photo-digest-head" }, [
+        el("h3", { className: "related-photo-digest-title", text: "関連写真ダイジェスト" }),
+        el("span", { className: "related-photo-digest-count", text: `${photos.length}枚` }),
+      ]),
+      el("p", { className: "related-photo-digest-note", text: "詳しい写真説明は、この後の写真カードに掲載しています。" }),
+      el("div", { className: "related-photo-digest-grid" }, [
+        ...digestPhotos.map((photo) => renderRelatedPhotoDigestTile(photo)),
+        remainingCount ? el("div", { className: "related-photo-digest-more", text: `ほか${remainingCount}枚` }) : "",
+      ]),
+    ]);
+  }
+
+  function renderRelatedPhotoDigestTile(photo) {
+    const title = photo.title || "現場写真";
+    return el("figure", { className: "related-photo-digest-tile" }, [
+      photo.src
+        ? renderAnnotatedImage(photo, "related-photo-digest-image", title, "cover")
+        : el("div", { className: "related-photo-digest-missing", text: "写真" }),
+      el("figcaption", {}, [el("strong", { text: title })]),
     ]);
   }
 
@@ -2331,6 +2355,17 @@
       requireValue(photo.finding || photo.memo, "調査写真", `${prefix}：現在の状態`);
       requireValue(photo.recommendation, "調査写真", `${prefix}：この箇所の対応目安`);
     });
+    if (isGroupedReportLayout()) {
+      const unclassifiedPhotoCount = getUnclassifiedPhotos().length;
+      if (unclassifiedPhotoCount) {
+        add(
+          "required",
+          "調査写真",
+          `未分類写真があります（${unclassifiedPhotoCount}枚）`,
+          "確認項目に属さない未分類の写真があります。確認項目ごとに関連写真を表示するPDFには表示されません。必要な写真は、確認項目に紐づけてからPDF出力してください。",
+        );
+      }
+    }
 
     if (!state.findings.length) {
       add("required", "確認項目", "確認項目", "確認項目が1件も追加されていません。");
@@ -5016,6 +5051,7 @@
 
   async function requestPrint() {
     if (!(await confirmMissingInputsBeforePrint())) return;
+    if (!(await confirmUnclassifiedPhotosBeforePrint())) return;
     const overLimitFields = pdfOverLimitFields();
     if (overLimitFields.length && !(await confirmPdfTextLength(overLimitFields))) return;
     if (
@@ -5029,6 +5065,53 @@
     companyInfoChangePending = false;
     syncPrintFooterStyle();
     window.print();
+  }
+
+  function confirmUnclassifiedPhotosBeforePrint() {
+    if (!isGroupedReportLayout()) return Promise.resolve(true);
+    const photos = getUnclassifiedPhotos();
+    if (!photos.length) return Promise.resolve(true);
+
+    return new Promise((resolve) => {
+      const previewItems = photos.slice(0, 6).map((photo, index) =>
+        el("li", {}, [
+          el("strong", { text: `未分類写真${index + 1}` }),
+          el("span", { text: photo.title || photo.area || "写真タイトル未入力" }),
+        ]),
+      );
+      const remaining = photos.length > previewItems.length
+        ? el("li", {}, [
+            el("strong", { text: "ほか" }),
+            el("span", { text: `${photos.length - previewItems.length}枚の未分類写真があります。` }),
+          ])
+        : "";
+      const overlay = el("div", { className: "confirm-screen" }, [
+        el("div", { className: "confirm-dialog input-check-dialog unclassified-photo-dialog" }, [
+          el("h2", { text: "未分類写真があります。" }),
+          el("p", {
+            text:
+              "確認項目に属さない未分類の写真があります。確認項目ごとに関連写真を表示するPDFには表示されません。必要な写真は、確認項目に紐づけてからPDF出力してください。",
+          }),
+          el("div", { className: "input-check-results" }, [
+            el("section", { className: "input-issue-group recommended" }, [
+              el("h3", { text: `未分類写真・${photos.length}枚` }),
+              el("ul", {}, [...previewItems, remaining]),
+            ]),
+          ]),
+          el("div", { className: "confirm-actions" }, [
+            button("修正する", "btn", () => finish(false)),
+            button("このままPDFへ進む", "btn primary", () => finish(true)),
+          ]),
+        ]),
+      ]);
+
+      function finish(continuePrint) {
+        overlay.remove();
+        resolve(continuePrint);
+      }
+
+      document.body.appendChild(overlay);
+    });
   }
 
   function pdfOverLimitFields() {

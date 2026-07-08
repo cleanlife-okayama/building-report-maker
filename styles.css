@@ -2391,6 +2391,116 @@ textarea:focus {
   gap: 10px;
 }
 
+.related-photo-digest {
+  display: grid;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px solid rgba(139, 30, 36, 0.16);
+  border-radius: 10px;
+  background:
+    linear-gradient(135deg, rgba(139, 30, 36, 0.06), transparent 48%),
+    rgba(255, 255, 255, 0.9);
+  box-shadow: 0 12px 26px rgba(31, 31, 31, 0.045);
+  break-inside: avoid;
+}
+
+.related-photo-digest-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.related-photo-digest-title {
+  margin: 0;
+  color: var(--brand);
+  font-size: 16px;
+  line-height: 1.45;
+}
+
+.related-photo-digest-count {
+  color: #7f7374;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.related-photo-digest-note {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.related-photo-digest-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 9px;
+}
+
+.related-photo-digest-tile,
+.related-photo-digest-more {
+  display: grid;
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(139, 30, 36, 0.14);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.92);
+}
+
+.related-photo-digest-tile .annotated-photo-image,
+.related-photo-digest-image,
+.related-photo-digest-missing {
+  width: 100%;
+  height: 64px;
+  min-height: 64px;
+  border-radius: 7px 7px 0 0;
+  overflow: hidden;
+}
+
+.related-photo-digest-image {
+  object-fit: cover;
+  display: block;
+}
+
+.related-photo-digest-missing {
+  display: grid;
+  place-items: center;
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 800;
+  background: rgba(139, 30, 36, 0.08);
+}
+
+.related-photo-digest-tile figcaption {
+  min-width: 0;
+  padding: 6px 7px 7px;
+}
+
+.related-photo-digest-tile strong {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;
+  color: var(--brand);
+  font-size: 11.5px;
+  line-height: 1.45;
+}
+
+.related-photo-digest-more {
+  min-height: 96px;
+  place-items: center;
+  padding: 8px;
+  color: var(--brand);
+  font-size: 13px;
+  font-weight: 900;
+  text-align: center;
+  background:
+    linear-gradient(135deg, rgba(139, 30, 36, 0.1), rgba(139, 30, 36, 0.02)),
+    rgba(255, 255, 255, 0.92);
+}
+
 .grouped-related-photos-title,
 .grouped-unclassified-title {
   margin: 4px 0 0;
@@ -3952,6 +4062,70 @@ textarea:focus {
 
   .grouped-related-photos {
     gap: 2.8mm;
+  }
+
+  .related-photo-digest + .grouped-related-photos {
+    break-before: page;
+    page-break-before: always;
+  }
+
+  .related-photo-digest {
+    gap: 2mm;
+    padding: 2.7mm;
+    border-radius: 3mm;
+    box-shadow: none;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  .related-photo-digest-head {
+    gap: 2mm;
+  }
+
+  .related-photo-digest-title {
+    font-size: 10pt;
+  }
+
+  .related-photo-digest-count {
+    font-size: 8pt;
+  }
+
+  .related-photo-digest-note {
+    font-size: 8.4pt;
+    line-height: 1.45;
+  }
+
+  .related-photo-digest-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 2mm;
+  }
+
+  .related-photo-digest-tile,
+  .related-photo-digest-more {
+    border-radius: 2.4mm;
+  }
+
+  .related-photo-digest-tile .annotated-photo-image,
+  .related-photo-digest-image,
+  .related-photo-digest-missing {
+    height: 22mm;
+    min-height: 22mm;
+    border-radius: 2mm 2mm 0 0;
+  }
+
+  .related-photo-digest-tile figcaption {
+    padding: 1.5mm 1.8mm 1.8mm;
+  }
+
+  .related-photo-digest-tile strong {
+    font-size: 7.8pt;
+    line-height: 1.35;
+  }
+
+  .related-photo-digest-more {
+    min-height: 31mm;
+    padding: 2mm;
+    font-size: 8.2pt;
   }
 
   .grouped-related-photos-title,
