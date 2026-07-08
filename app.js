@@ -4062,6 +4062,70 @@
     }
   }
 
+  function buildSummaryContextAiReference() {
+    const valueOrBlank = (value) => truncateAiReferenceText(value) || "未入力";
+    const hasMeaningfulFindingReference = (finding) => {
+      const hasRelatedPhotos = state.photos.some((photo) => photo.findingId === finding.id);
+      return (
+        hasRelatedPhotos ||
+        !isBlank(finding.condition) ||
+        !isBlank(finding.priority) ||
+        !isBlank(finding.observation) ||
+        !isBlank(finding.concern) ||
+        !isBlank(finding.proposal)
+      );
+    };
+    let usedPhotoCount = 0;
+    const maxPhotosTotal = 10;
+    const maxPhotosPerFinding = 3;
+    const maxFindings = 8;
+    const referenceFindings = state.findings.filter(hasMeaningfulFindingReference);
+    const findingBlocks = referenceFindings.slice(0, maxFindings).map((finding, findingIndex) => {
+      const relatedPhotos = state.photos.filter((photo) => photo.findingId === finding.id);
+      const remainingPhotoSlots = Math.max(0, maxPhotosTotal - usedPhotoCount);
+      const photosToUse = relatedPhotos.slice(0, Math.min(maxPhotosPerFinding, remainingPhotoSlots));
+      usedPhotoCount += photosToUse.length;
+      const photoLines = photosToUse.map((photo, photoIndex) => {
+        return [
+          `関連写真${photoIndex + 1}`,
+          `写真タイトル：${valueOrBlank(photo.title)}`,
+          `撮影箇所：${valueOrBlank(aiConsultationValue(photo.area))}`,
+          `調査結果の目安：${valueOrBlank(aiConsultationValue(photo.condition))}`,
+          `現在の状態：${valueOrBlank(photo.finding || photo.memo)}`,
+          `この箇所の対応目安：${valueOrBlank(photo.recommendation)}`,
+        ].join("\n");
+      });
+      if (relatedPhotos.length > photosToUse.length) {
+        photoLines.push(`ほか${relatedPhotos.length - photosToUse.length}枚の関連写真があります。`);
+      }
+      return [
+        `確認項目${findingIndex + 1}`,
+        `確認項目名：${valueOrBlank(aiConsultationValue(finding.area))}`,
+        `状態：${valueOrBlank(aiConsultationValue(finding.condition))}`,
+        `対応の目安：${valueOrBlank(priorityLabel(finding.priority))}`,
+        `確認した内容：${valueOrBlank(finding.observation)}`,
+        `考えられること・注意点：${valueOrBlank(finding.concern)}`,
+        `対応の考え方：${valueOrBlank(finding.proposal)}`,
+        photoLines.length ? ["関連写真", ...photoLines].join("\n") : "関連写真：この確認項目に紐づく写真はまだありません。",
+      ].join("\n");
+    });
+    if (referenceFindings.length > maxFindings) {
+      findingBlocks.push(`ほか${referenceFindings.length - maxFindings}件の確認項目があります。`);
+    }
+    return (
+      "【全体まとめ用の参考情報】\n" +
+      "以下は、全体まとめを整えるための参考情報です。確認項目、関連写真、施工方針の内容を踏まえてください。ただし、回答見出しは増やさず、全体まとめの回答形式だけで返してください。\n\n" +
+      "【施工方針の入力内容】\n" +
+      `ご提案内容：${valueOrBlank(state.proposal.planName)}\n` +
+      `おすすめする施工方針：${valueOrBlank(state.summary.recommendation)}\n` +
+      `主な工事内容：${valueOrBlank(state.proposal.scope)}\n\n` +
+      "【確認項目・関連写真の参考情報】\n" +
+      (findingBlocks.length
+        ? findingBlocks.join("\n\n")
+        : "全体まとめAIの参考情報に含める入力済みの確認項目や関連写真はまだありません。")
+    );
+  }
+
   function hasReportSectionAiMaterial(sectionKey) {
     if (sectionKey === "concern") return !isBlank(state.summary.customerConcern);
     if (sectionKey === "assessment") {
@@ -4156,7 +4220,10 @@
       summary: "全体まとめ",
     };
     const label = labels[sectionKey] || "対象項目";
-    const prompt = buildReportSectionAiPrompt(sectionKey);
+    const prompt =
+      sectionKey === "summary"
+        ? `${buildReportSectionAiPrompt(sectionKey)}\n\n${buildSummaryContextAiReference()}`
+        : buildReportSectionAiPrompt(sectionKey);
     if (await copyPlainText(prompt)) {
       showToast(
         `${label}のAI相談文をコピーしました。\n` +
