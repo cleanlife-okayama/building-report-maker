@@ -2501,6 +2501,33 @@ textarea:focus {
     rgba(255, 255, 255, 0.92);
 }
 
+.photo-report-page-blocks {
+  display: grid;
+  gap: 22px;
+}
+
+.photo-report-page-block {
+  display: grid;
+  gap: 12px;
+}
+
+.photo-report-page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 4px 0 0;
+  padding-left: 12px;
+  border-left: 4px solid rgba(139, 30, 36, 0.5);
+  color: var(--brand);
+}
+
+.photo-report-page-header h3 {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.45;
+}
+
 .grouped-related-photos-title,
 .grouped-unclassified-title {
   margin: 4px 0 0;
@@ -4142,6 +4169,35 @@ textarea:focus {
     page-break-after: avoid;
   }
 
+  .photo-report-page-blocks {
+    display: block;
+    break-before: page;
+    page-break-before: always;
+  }
+
+  .grouped-related-photos .photo-report-page-blocks {
+    break-before: auto;
+    page-break-before: auto;
+  }
+
+  .photo-report-page-block + .photo-report-page-block {
+    break-before: page;
+    page-break-before: always;
+  }
+
+  .photo-report-page-header {
+    margin: 1mm 0 0;
+    padding-left: 2.4mm;
+    border-left-width: 0.8mm;
+    font-size: 12pt;
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .photo-report-page-header h3 {
+    font-size: 12pt;
+  }
+
   .photo-section {
     break-before: auto;
     break-after: page;
@@ -4150,6 +4206,11 @@ textarea:focus {
   .photo-report-grid {
     display: block;
     break-before: page;
+  }
+
+  .photo-report-page-block .photo-report-grid {
+    break-before: auto;
+    page-break-before: auto;
   }
 
   .photo-report {

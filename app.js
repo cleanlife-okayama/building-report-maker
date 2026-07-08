@@ -115,7 +115,27 @@
     "・同じ内容の繰り返しを減らし、報告書全体の流れが自然になるようにしてください。\n" +
     "・売り込み感を強くしすぎず、お客様が納得して判断できる文章にしてください。\n" +
     "・不要な工事を強くすすめる表現は避けてください。";
+  const AI_PHOTO_IMPORTANT_GUIDANCE =
+    "【最重要】\n" +
+    "この画像の内容をもとに、必ず下記5項目だけで回答してください。\n" +
+    "【写真タイトル】\n" +
+    "【撮影箇所】\n" +
+    "【調査結果の目安】\n" +
+    "【現在の状態】\n" +
+    "【この箇所の対応目安】\n\n" +
+    "このAI回答は、写真から新しく診断を確定するものではありません。\n" +
+    "担当者が確認した内容や、写真と入力内容から分かる範囲をもとに、お客様にも伝わる自然な文章へ整えるための補助です。\n\n" +
+    "文字数目安：\n" +
+    "・写真タイトル：25文字程度\n" +
+    "・撮影箇所：20文字程度\n" +
+    "・調査結果の目安：20文字程度\n" +
+    "・現在の状態：90〜110文字程度、長くても120文字以内\n" +
+    "・この箇所の対応目安：90〜110文字程度、長くても120文字以内\n\n" +
+    "注意：\n" +
+    "短くすることを優先しすぎて、必要な理由や注意点を削りすぎないでください。\n" +
+    "写真だけで断定できない内容は、「可能性があります」「確認が必要です」「おすすめします」などの表現を使ってください。\n\n";
   const AI_PHOTO_PROMPT =
+    AI_PHOTO_IMPORTANT_GUIDANCE +
     "これはアプリ機能の一つです。作成したコメントは、建物調査報告書メーカーの各入力欄へコピーして使用します。前置きや補足説明はできるだけ省き、そのまま貼り付けやすい形で回答してください。\n\n" +
     "この画像を読み取ったAIは、まずこのプロンプトに従ってください。下の写真と入力内容を確認し、建物調査報告書に載せるコメント案を作成してください。\n\n" +
     "入力済み・空欄を問わず、写真と入力内容から分かる範囲で、次の全項目を整えてください。\n" +
@@ -128,11 +148,11 @@
     "入力内容に「前項と同様」「上記の通り」「前頁と同様」「同じです」などの表現がある場合も、そのまま使わず、この項目だけで意味が通る文章に言い換えてください。\n\n" +
     AI_WRITING_GUIDANCE +
     "\n\n各項目は、報告書のPDF・印刷時にレイアウトが崩れないよう、次の文字数を目安に整えてください。\n" +
-    "【写真タイトル】30字以内\n" +
-    "【撮影箇所】30字以内\n" +
+    "【写真タイトル】25字程度\n" +
+    "【撮影箇所】20字程度\n" +
     "【調査結果の目安】20字以内\n" +
-    "【現在の状態】160字以内\n" +
-    "【この箇所の対応目安】180字以内\n\n" +
+    "【現在の状態】90〜110字程度、長くても120字以内\n" +
+    "【この箇所の対応目安】90〜110字程度、長くても120字以内\n\n" +
     "各欄の文字数目安内で、必要な説明は省略しすぎず、お客様が納得して判断できる文章にしてください。短くまとめることよりも、分かりやすく伝わることを優先してください。無理に文字数を増やさず、理由・背景・不安への配慮・対応する意味が自然に伝わる文章を優先してください。短い例を入れた方が伝わりやすい場合は、自然な範囲で入れてください。ただし、入力内容にない原因・工事内容・効果・危険性を断定して追加しないでください。";
   const PDF_TEXT_FIELD_RULES = {
     projectWorkName: { label: "工事名", maxLength: 60, warningRatio: 0.85 },
@@ -152,11 +172,11 @@
     findingObservation: { label: "確認した内容", maxLength: 220, warningRatio: 0.85 },
     findingConcern: { label: "考えられること・注意点", maxLength: 260, warningRatio: 0.85 },
     findingProposal: { label: "対応の考え方", maxLength: 260, warningRatio: 0.85 },
-    photoTitle: { label: "写真タイトル", maxLength: 30, warningRatio: 0.85 },
-    photoAreaOther: { label: "撮影箇所の自由入力", maxLength: 30, warningRatio: 0.85 },
+    photoTitle: { label: "写真タイトル", maxLength: 25, warningRatio: 0.85 },
+    photoAreaOther: { label: "撮影箇所の自由入力", maxLength: 20, warningRatio: 0.85 },
     photoConditionOther: { label: "調査結果の目安の自由入力", maxLength: 20, warningRatio: 0.85 },
-    photoFinding: { label: "現在の状態", maxLength: 160, warningRatio: 0.85 },
-    photoRecommendation: { label: "この箇所の対応目安", maxLength: 180, warningRatio: 0.85 },
+    photoFinding: { label: "現在の状態", maxLength: 120, warningRatio: 0.85 },
+    photoRecommendation: { label: "この箇所の対応目安", maxLength: 120, warningRatio: 0.85 },
     proposalPlanName: { label: "ご提案内容", maxLength: 60, warningRatio: 0.85 },
     proposalRecommendation: { label: "おすすめする施工方針", maxLength: 260, warningRatio: 0.85 },
     proposalScope: { label: "主な工事内容", maxLength: 220, warningRatio: 0.85 },
@@ -231,10 +251,10 @@
       "このままにした場合の心配点を書いてください。\n断定できない場合は「可能性があります」でOKです。\n例：雨天時に滑りやすくなる可能性があります。",
     対応の考え方:
       "まず何を確認し、どのような対応を検討するかを書いてください。\n箇条書きでもOKです。\n例：浮きや割れの範囲を確認し、必要に応じて補修を検討します。",
-    撮影箇所: "例：西面外壁／キッチン流し台／リビング天井",
+    撮影箇所: "20文字程度で入力してください。\n例：西面外壁／キッチン流し台／リビング天井",
     確認項目名: "例：屋根／外壁／室内現状回復／キッチン流し台／階段踏面",
     この箇所の対応目安:
-      "どう直したいか、どんな対応がよさそうかを書いてください。箇条書きでもOKです。\n例：雨漏れの原因を確認し、必要に応じて補修を行うことをおすすめします。",
+      "90〜110文字程度、長くても120文字以内が目安です。\nどう直したいか、どんな対応がよさそうかを書いてください。箇条書きでもOKです。\n例：雨漏れの原因を確認し、必要に応じて補修を行うことをおすすめします。",
     総合目安:
       "今回の確認結果をもとに、全体としてどのような状態かを書いてください。\n例：塗替えと補修を検討する時期です。",
     緊急性について:
@@ -242,9 +262,9 @@
     おすすめの方向性:
       "ここは受注につながる大切な欄です。\n確認結果をもとに、どのような対応をおすすめするのかを書いてください。\n箇条書きでもOKです。AIが文章を整えます。",
     表示文: "例：環境影響あり",
-    写真タイトル: "例：屋根全体の色あせ",
+    写真タイトル: "25文字程度で入力してください。\n例：屋根全体の色あせ",
     現在の状態:
-      "見たまま・気づいたことを、できるだけ具体的に書いてください。箇条書きでもOKです。\n例：雨漏れの跡あり。外壁の浮きあり。鉄部にサビが出ている。",
+      "90〜110文字程度、長くても120文字以内が目安です。\n見たまま・気づいたことを、できるだけ具体的に書いてください。箇条書きでもOKです。\n例：雨漏れの跡あり。外壁の浮きあり。鉄部にサビが出ている。",
     ご提案内容:
       "今回おすすめする工事内容を短く書いてください。\n例：外部階段の滑り対策を中心にした改修提案",
     おすすめする施工方針:
@@ -1992,9 +2012,38 @@
 
   function renderGroupedPhotoList(title, photos) {
     return el("div", { className: "grouped-related-photos" }, [
-      el("h3", { className: "grouped-related-photos-title", text: title }),
-      el("div", { className: "photo-report-grid grouped-photo-report-grid" }, photos.map((photo) => renderPhotoReportFigure(photo, "grouped-photo-report"))),
+      renderPhotoReportPageBlocks(title, photos, {
+        blocksClassName: "grouped-photo-report-page-blocks",
+        gridClassName: "grouped-photo-report-grid",
+        cardClassName: "grouped-photo-report",
+      }),
     ]);
+  }
+
+  function chunkItems(items, size) {
+    const chunks = [];
+    for (let index = 0; index < items.length; index += size) {
+      chunks.push(items.slice(index, index + size));
+    }
+    return chunks;
+  }
+
+  function renderPhotoReportPageHeader(title) {
+    return el("div", { className: "photo-report-page-header" }, [
+      el("h3", { text: title }),
+    ]);
+  }
+
+  function renderPhotoReportPageBlocks(title, photos, options = {}) {
+    const blocksClassName = ["photo-report-page-blocks", options.blocksClassName || ""].filter(Boolean).join(" ");
+    const gridClassName = ["photo-report-grid", options.gridClassName || ""].filter(Boolean).join(" ");
+    const cardClassName = options.cardClassName || "";
+    return el("div", { className: blocksClassName }, chunkItems(photos, 2).map((photoChunk) =>
+      el("div", { className: "photo-report-page-block" }, [
+        renderPhotoReportPageHeader(title),
+        el("div", { className: gridClassName }, photoChunk.map((photo) => renderPhotoReportFigure(photo, cardClassName))),
+      ]),
+    ));
   }
 
   function renderPhotoReportFigure(photo, extraClassName = "") {
@@ -2020,30 +2069,11 @@
   }
 
   function renderPhotoReportContent() {
-    const content = state.photos.length
-      ? el(
-          "div",
-          { className: "photo-report-grid" },
-          state.photos.map((photo, index) =>
-            el("figure", { className: `photo-report ${isWidePhoto(photo) ? "wide" : ""}`.trim() }, [
-              photo.src
-                ? renderAnnotatedImage(photo, "", photo.title || "現場写真", "cover")
-                : el("div", { className: "photo-missing", text: "写真データを読み込めませんでした" }),
-              el("figcaption", { className: "photo-caption" }, [
-                el("strong", { text: photo.title || photo.area || "現場写真" }),
-                el("dl", { className: "photo-detail-list" }, [
-                  photo.area ? detailItem("撮影箇所", photo.area) : "",
-                  photo.condition ? detailItem("調査結果の目安", photo.condition) : "",
-                  photo.finding || photo.memo ? detailItem("現在の状態", photo.finding || photo.memo) : "",
-                  photo.recommendation ? detailItem("この箇所の対応目安", photo.recommendation) : "",
-                ]),
-              ]),
-            ]),
-          ),
-        )
-      : el("div", { className: "empty", text: "写真を追加すると、ここに掲載されます" });
+    if (state.photos.length) {
+      return renderPhotoReportPageBlocks("現場写真", state.photos);
+    }
 
-    return content;
+    return el("div", { className: "empty", text: "写真を追加すると、ここに掲載されます" });
   }
 
   function isWidePhoto(photo) {
@@ -2347,13 +2377,30 @@
     }
     state.photos.forEach((photo, index) => {
       const prefix = `写真${index + 1}`;
+      const findingText = photo.finding || photo.memo || "";
       requireValue(photo.title, "調査写真", `${prefix}：写真タイトル`);
       requireValue(photo.area, "調査写真", `${prefix}：撮影箇所`);
       if (!requireOtherValue(photo.condition, "調査写真", `${prefix}：調査結果の目安`)) {
         requireValue(photo.condition, "調査写真", `${prefix}：調査結果の目安`);
       }
-      requireValue(photo.finding || photo.memo, "調査写真", `${prefix}：現在の状態`);
+      requireValue(findingText, "調査写真", `${prefix}：現在の状態`);
       requireValue(photo.recommendation, "調査写真", `${prefix}：この箇所の対応目安`);
+      if (textLength(findingText) > 120) {
+        add(
+          "recommended",
+          "調査写真",
+          `${prefix}：現在の状態`,
+          `${prefix}：現在の状態が長めです。PDF上、印刷で写真カードが大きくなる可能性がありページが崩れる可能性があります。90〜110文字程度、長くても120文字以内を目安に整えてください。`,
+        );
+      }
+      if (textLength(photo.recommendation) > 120) {
+        add(
+          "recommended",
+          "調査写真",
+          `${prefix}：この箇所の対応目安`,
+          `${prefix}：この箇所の対応目安が長めです。PDF上、印刷で写真カードが大きくなる可能性がありページが崩れる可能性があります。90〜110文字程度、長くても120文字以内を目安に整えてください。`,
+        );
+      }
     });
     if (isGroupedReportLayout()) {
       const unclassifiedPhotoCount = getUnclassifiedPhotos().length;
