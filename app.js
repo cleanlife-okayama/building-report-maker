@@ -3803,6 +3803,38 @@
     }
   }
 
+  function truncateAiReferenceText(value, maxLength = 120) {
+    const text = safeText(value).trim();
+    if (text.length <= maxLength) return text;
+    return `${text.slice(0, maxLength)}...`;
+  }
+
+  function buildFindingRelatedPhotoAiReference(finding) {
+    const relatedPhotos = state.photos.filter((photo) => photo.findingId === finding.id);
+    if (!relatedPhotos.length) {
+      return "【関連写真の参考情報】\nこの確認項目に紐づく関連写真はまだありません。入力済みの確認項目の内容をもとに文章を整えてください。";
+    }
+    const valueOrBlank = (value) => truncateAiReferenceText(value) || "未入力";
+    const lines = relatedPhotos.slice(0, 5).map((photo, index) => {
+      return [
+        `関連写真${index + 1}`,
+        `写真タイトル：${valueOrBlank(photo.title)}`,
+        `撮影箇所：${valueOrBlank(aiConsultationValue(photo.area))}`,
+        `調査結果の目安：${valueOrBlank(aiConsultationValue(photo.condition))}`,
+        `現在の状態：${valueOrBlank(photo.finding || photo.memo)}`,
+        `この箇所の対応目安：${valueOrBlank(photo.recommendation)}`,
+      ].join("\n");
+    });
+    if (relatedPhotos.length > 5) {
+      lines.push(`ほか${relatedPhotos.length - 5}枚の関連写真があります。`);
+    }
+    return (
+      "【関連写真の参考情報】\n" +
+      "以下は、この確認項目に紐づく写真カードの入力内容です。確認項目の文章を整えるための参考情報として扱い、回答見出しは増やさないでください。\n" +
+      lines.join("\n\n")
+    );
+  }
+
   function buildFindingAiConsultationPrompt(finding) {
     const valueOrBlank = (value) => safeText(value).trim() || "未入力";
     const area = aiConsultationValue(finding.area) || "未入力";
@@ -3852,7 +3884,7 @@
       );
       return;
     }
-    const prompt = buildFindingAiConsultationPrompt(finding);
+    const prompt = `${buildFindingAiConsultationPrompt(finding)}\n\n${buildFindingRelatedPhotoAiReference(finding)}`;
     if (await copyPlainText(prompt)) {
       showToast(
         "AI相談文をコピーしました。\n" +
