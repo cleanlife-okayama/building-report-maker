@@ -3215,6 +3215,7 @@ textarea:focus {
   margin: 0;
   font-size: 16px;
   line-height: 2;
+  white-space: pre-wrap;
 }
 
 .company-settings-intro {
@@ -4844,10 +4845,14 @@ textarea:focus {
     gap: 3mm;
   }
 
-  .timeline-item p,
-  .closing p {
+  .timeline-item p {
     font-size: 12pt;
     line-height: 2;
+  }
+
+  .closing p {
+    font-size: 11.4pt;
+    line-height: 1.86;
   }
 
   .cover-company-contact strong {
