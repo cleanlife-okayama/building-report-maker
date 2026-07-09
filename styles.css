@@ -4517,6 +4517,8 @@ textarea:focus {
   }
 
   .photo-report {
+    display: flex;
+    flex-direction: column;
     page-break-inside: avoid;
     break-inside: avoid;
     width: 85%;
@@ -4566,13 +4568,33 @@ textarea:focus {
   }
 
   .photo-report > .annotated-photo-image {
+    display: block;
+    flex: 0 0 70mm;
+    position: relative;
+    width: 100%;
     height: 70mm;
+    min-height: 70mm;
+    max-height: 70mm;
     border-radius: 2mm 2mm 0 0;
     overflow: hidden !important;
   }
 
-  .photo-report > .annotated-photo-image img {
+  .photo-report > .annotated-photo-image > img {
+    display: block;
+    width: 100%;
     height: 100%;
+    min-height: 0;
+    max-height: none;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 0;
+  }
+
+  .photo-report > .annotated-photo-image > .photo-annotation-overlay {
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden !important;
   }
 
   .report .cover-photo .annotated-photo-image,
