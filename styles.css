@@ -1611,6 +1611,42 @@ textarea:focus {
   white-space: pre-wrap;
 }
 
+.copy-fallback-dialog {
+  width: min(860px, 100%);
+  max-height: calc(100vh - 48px);
+  grid-template-rows: auto auto minmax(220px, 1fr) auto auto;
+  overflow: hidden;
+}
+
+.copy-fallback-textarea {
+  min-height: 280px;
+  max-height: 56vh;
+  overflow-y: auto;
+  resize: vertical;
+  font-family: "Yu Gothic", "Meiryo", sans-serif;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.copy-fallback-status {
+  min-height: 1.6em;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+@media (max-width: 560px) {
+  .copy-fallback-dialog {
+    max-height: calc(100vh - 28px);
+    padding: 18px;
+  }
+
+  .copy-fallback-textarea {
+    min-height: 220px;
+    max-height: 48vh;
+    font-size: 12px;
+  }
+}
+
 .annotation-open {
   overflow: hidden;
 }

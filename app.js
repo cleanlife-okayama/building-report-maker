@@ -4106,7 +4106,7 @@
     if (copied) {
       showToast("相談文をコピーしました。AIの回答は参考です。最終判断は担当者が確認してください。", 4200);
     } else {
-      window.alert(`相談文をコピーできませんでした。\n\n${prompt}`);
+      showCopyFallbackDialog("AI相談文をコピーできませんでした", prompt);
     }
   }
 
@@ -4263,7 +4263,7 @@
         5200,
       );
     } else {
-      window.alert(`AI相談文をコピーできませんでした。\n\n${prompt}`);
+      showCopyFallbackDialog("AI相談文をコピーできませんでした", prompt);
     }
   }
 
@@ -4428,7 +4428,7 @@
         5200,
       );
     } else {
-      window.alert(`${config.label}のAI相談文をコピーできませんでした。\n\n${prompt}`);
+      showCopyFallbackDialog("AI相談文をコピーできませんでした", prompt);
     }
   }
 
@@ -4458,7 +4458,7 @@
         5200,
       );
     } else {
-      window.alert(`施工方針のAI相談文をコピーできませんでした。\n\n${prompt}`);
+      showCopyFallbackDialog("AI相談文をコピーできませんでした", prompt);
     }
   }
 
@@ -4632,7 +4632,7 @@
         5200,
       );
     } else {
-      window.alert(`${label}のAI相談文をコピーできませんでした。\n\n${prompt}`);
+      showCopyFallbackDialog("AI相談文をコピーできませんでした", prompt);
     }
   }
 
@@ -4660,6 +4660,48 @@
       textarea.remove();
     }
     return copied;
+  }
+
+  function showCopyFallbackDialog(title, prompt) {
+    const textarea = el("textarea", {
+      className: "copy-fallback-textarea",
+      value: prompt,
+      readonly: "readonly",
+      "aria-label": "手動コピー用のAI相談文",
+    });
+    const status = el("p", { className: "copy-fallback-status", text: "" });
+    const overlay = el("div", { className: "confirm-screen" }, [
+      el("div", { className: "confirm-dialog copy-fallback-dialog" }, [
+        el("h2", { text: title || "AI相談文をコピーできませんでした" }),
+        el("p", { text: "下の文章を選択して、手動でコピーしてください。" }),
+        textarea,
+        status,
+        el("div", { className: "confirm-actions" }, [
+          button("全文を選択", "btn", () => selectCopyFallbackText(textarea, status)),
+          button("もう一度コピー", "btn warn", async () => {
+            if (await copyPlainText(prompt)) {
+              overlay.remove();
+              showToast("AI相談文をコピーしました。", 2600);
+            } else {
+              selectCopyFallbackText(textarea, status);
+              status.textContent = "もう一度コピーできませんでした。選択された文章を手動でコピーしてください。";
+            }
+          }),
+          button("閉じる", "btn primary", () => overlay.remove()),
+        ]),
+      ]),
+    ]);
+    document.body.appendChild(overlay);
+    requestAnimationFrame(() => selectCopyFallbackText(textarea, status));
+  }
+
+  function selectCopyFallbackText(textarea, statusNode) {
+    textarea.focus();
+    textarea.select();
+    if (typeof textarea.setSelectionRange === "function") {
+      textarea.setSelectionRange(0, textarea.value.length);
+    }
+    if (statusNode) statusNode.textContent = "全文を選択しました。コピー操作を行ってください。";
   }
 
   async function exportJson() {
