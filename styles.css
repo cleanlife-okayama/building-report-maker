@@ -3428,6 +3428,131 @@ textarea:focus {
   object-fit: contain;
 }
 
+.company-profile-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(210px, 250px);
+  gap: 28px;
+  align-items: start;
+  padding-top: 10px;
+}
+
+.company-profile-main {
+  min-width: 0;
+}
+
+.company-profile-side {
+  display: grid;
+  gap: 14px;
+  min-width: 0;
+}
+
+.company-profile-main .company-profile-details {
+  grid-template-columns: 1fr;
+}
+
+.company-trust-card {
+  display: grid;
+  gap: 15px;
+  padding: 18px;
+  border: 1px solid rgba(139, 30, 36, 0.16);
+  border-radius: 10px;
+  background:
+    linear-gradient(135deg, rgba(139, 30, 36, 0.05), transparent 52%),
+    rgba(255, 255, 255, 0.86);
+}
+
+.company-trust-kicker {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--brand);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+}
+
+.company-trust-card h3 {
+  margin: 0 0 10px;
+  color: #2d2829;
+  font-size: 17px;
+  line-height: 1.35;
+}
+
+.company-trust-card p {
+  margin: 0 0 10px;
+  color: #4f4749;
+  font-size: 12.5px;
+  line-height: 1.72;
+}
+
+.company-trust-card ul {
+  display: grid;
+  gap: 6px;
+  margin: 12px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.company-trust-card li {
+  position: relative;
+  padding-left: 16px;
+  color: #3d3638;
+  font-size: 12.5px;
+  font-weight: 700;
+  line-height: 1.55;
+}
+
+.company-trust-card li::before {
+  content: "";
+  position: absolute;
+  top: 0.72em;
+  left: 2px;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--brand);
+}
+
+.company-trust-qr {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(139, 30, 36, 0.13);
+  text-align: center;
+}
+
+.company-trust-qr img {
+  display: block;
+  width: 124px;
+  height: 124px;
+  padding: 8px;
+  border: 1px solid rgba(139, 30, 36, 0.14);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.company-trust-link {
+  display: grid;
+  gap: 5px;
+  justify-items: center;
+  min-width: 0;
+}
+
+.company-trust-link span {
+  color: var(--brand);
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.company-trust-link a {
+  color: #3a3133;
+  font-size: 12px;
+  font-weight: 800;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  text-decoration: none;
+}
+
 .company-profile-details {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -3636,6 +3761,7 @@ textarea:focus {
 
   .company-logo-preview,
   .company-profile-head,
+  .company-profile-layout,
   .company-profile-details {
     grid-template-columns: 1fr;
   }
@@ -4727,6 +4853,26 @@ textarea:focus {
     padding: 3mm 0 7mm;
   }
 
+  .company-profile-layout {
+    grid-template-columns: minmax(0, 1fr) 58mm;
+    grid-template-rows: auto auto;
+    column-gap: 8mm;
+    row-gap: 6mm;
+    align-items: start;
+    padding-top: 3mm;
+  }
+
+  .company-profile-main,
+  .company-profile-side {
+    display: contents;
+  }
+
+  .company-profile-heading {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: start;
+  }
+
   .company-profile-kicker {
     margin-bottom: 2mm;
     font-size: 9.5pt;
@@ -4760,6 +4906,9 @@ textarea:focus {
   }
 
   .company-profile-logos {
+    grid-column: 2;
+    grid-row: 1;
+    align-self: start;
     gap: 2.5mm;
   }
 
@@ -4768,11 +4917,80 @@ textarea:focus {
     max-height: 25mm;
   }
 
+  .company-trust-card {
+    grid-column: 2;
+    grid-row: 2;
+    align-self: start;
+    gap: 3.4mm;
+    padding: 4.5mm;
+    border-radius: 2.5mm;
+  }
+
+  .company-trust-kicker {
+    margin-bottom: 1.5mm;
+    font-size: 8.5pt;
+  }
+
+  .company-trust-card h3 {
+    margin-bottom: 2.5mm;
+    font-size: 13pt;
+  }
+
+  .company-trust-card p {
+    margin-bottom: 2.5mm;
+    font-size: 9.2pt;
+    line-height: 1.62;
+  }
+
+  .company-trust-card ul {
+    gap: 1.5mm;
+    margin-top: 3mm;
+  }
+
+  .company-trust-card li {
+    padding-left: 4mm;
+    font-size: 9.2pt;
+    line-height: 1.5;
+  }
+
+  .company-trust-card li::before {
+    width: 1.5mm;
+    height: 1.5mm;
+  }
+
+  .company-trust-qr {
+    gap: 2mm;
+    padding-top: 4mm;
+    text-align: center;
+  }
+
+  .company-trust-qr img {
+    width: 34mm;
+    height: 34mm;
+    padding: 1.8mm;
+    border-radius: 1.6mm;
+  }
+
+  .company-trust-link span {
+    font-size: 8.5pt;
+  }
+
+  .company-trust-link a {
+    font-size: 8pt;
+    line-height: 1.35;
+  }
+
   .company-profile-details {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    margin-top: 7mm;
+    grid-column: 1;
+    grid-row: 2;
+    align-self: start;
+    margin-top: 0;
     overflow: hidden !important;
     border-radius: 2.5mm;
+  }
+
+  .company-profile-main .company-profile-details {
+    grid-template-columns: 1fr;
   }
 
   .company-profile-details > div {

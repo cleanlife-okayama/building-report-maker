@@ -12,6 +12,8 @@
   const DIRECTORY_HANDLE_DB_VERSION = 1;
   const DIRECTORY_HANDLE_STORE_NAME = "handles";
   const CURRENT_DIRECTORY_HANDLE_KEY = "current-report-directory";
+  const COMPANY_TRUST_CARD_URL = "https://www.kansai.co.jp/reform-s/about/";
+  const COMPANY_TRUST_CARD_QR_SRC = "assets/reform-summit-qr.svg";
   const COMPANY_SETTINGS_FIELDS = [
     "name",
     "brandName",
@@ -2669,43 +2671,85 @@
 
     return el("section", { className: "company-profile-section" }, [
       el("div", { className: "company-profile-card" }, [
-        el("div", { className: "company-profile-head" }, [
-          el("div", { className: "company-profile-heading" }, [
-            el("span", { className: "company-profile-kicker", text: "発行会社情報" }),
-            el("h2", { text: displayName || "会社情報" }),
-            brandName && brandName !== displayName
-              ? el("p", { className: "company-profile-brand", text: brandName })
+        el("div", { className: "company-profile-layout" }, [
+          el("div", { className: "company-profile-main" }, [
+            el("div", { className: "company-profile-heading" }, [
+              el("span", { className: "company-profile-kicker", text: "発行会社情報" }),
+              el("h2", { text: displayName || "会社情報" }),
+              brandName && brandName !== displayName
+                ? el("p", { className: "company-profile-brand", text: brandName })
+                : "",
+              company.tagline ? el("p", { className: "company-profile-tagline", text: company.tagline }) : "",
+            ]),
+            details.length
+              ? el(
+                  "dl",
+                  { className: "company-profile-details" },
+                  details.map(([label, value]) =>
+                    el("div", { className: ["住所", "対応サービス"].includes(label) ? "wide" : "" }, [
+                      el("dt", { text: label }),
+                      el("dd", { text: safeText(value) }),
+                    ]),
+                  ),
+                )
               : "",
-            company.tagline ? el("p", { className: "company-profile-tagline", text: company.tagline }) : "",
           ]),
-          logos.length
-            ? el(
-                "div",
-                { className: `company-profile-logos ${logos.length === 1 ? "single" : ""}`.trim() },
-                logos.map((logo) =>
-                  el("div", { className: "company-profile-logo" }, [
-                    el("img", {
-                      src: logo.src,
-                      alt: `${displayName || "会社"}のロゴ${logo.slot}`,
-                      title: logo.name || `ロゴ${logo.slot}`,
-                    }),
-                  ]),
-                ),
-              )
-            : "",
+          el("div", { className: "company-profile-side" }, [
+            logos.length
+              ? el(
+                  "div",
+                  { className: `company-profile-logos ${logos.length === 1 ? "single" : ""}`.trim() },
+                  logos.map((logo) =>
+                    el("div", { className: "company-profile-logo" }, [
+                      el("img", {
+                        src: logo.src,
+                        alt: `${displayName || "会社"}のロゴ${logo.slot}`,
+                        title: logo.name || `ロゴ${logo.slot}`,
+                      }),
+                    ]),
+                  ),
+                )
+              : "",
+            renderCompanyTrustCard(),
+          ]),
         ]),
-        details.length
-          ? el(
-              "dl",
-              { className: "company-profile-details" },
-              details.map(([label, value]) =>
-                el("div", { className: ["住所", "対応サービス"].includes(label) ? "wide" : "" }, [
-                  el("dt", { text: label }),
-                  el("dd", { text: safeText(value) }),
-                ]),
-              ),
-            )
-          : "",
+      ]),
+    ]);
+  }
+
+  function renderCompanyTrustCard() {
+    return el("aside", { className: "company-trust-card" }, [
+      el("div", { className: "company-trust-copy" }, [
+        el("span", { className: "company-trust-kicker", text: "安心してご相談いただくために" }),
+        el("h3", { text: "リフォームサミット参画店" }),
+        el("p", {
+          text:
+            "当社は、関西ペイントグループがサポートする「リフォームサミット」に参画しています。",
+        }),
+        el("p", {
+          text:
+            "塗装に関する知識・技術・提案力を学びながら、お客様に分かりやすく、安心してご相談いただける住まいの塗り替え提案を心がけています。",
+        }),
+        el("ul", {}, [
+          el("li", { text: "マナーや提案力の向上" }),
+          el("li", { text: "塗装技術に関する学び" }),
+          el("li", { text: "施工後の安心にも配慮した対応" }),
+        ]),
+      ]),
+      el("div", { className: "company-trust-qr" }, [
+        el("img", {
+          src: COMPANY_TRUST_CARD_QR_SRC,
+          alt: "リフォームサミット紹介ページのQRコード",
+        }),
+        el("div", { className: "company-trust-link" }, [
+          el("span", { text: "詳しくはこちら" }),
+          el("a", {
+            href: COMPANY_TRUST_CARD_URL,
+            target: "_blank",
+            rel: "noopener noreferrer",
+            text: COMPANY_TRUST_CARD_URL,
+          }),
+        ]),
       ]),
     ]);
   }
