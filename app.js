@@ -341,7 +341,7 @@
       },
     ],
     photos: [],
-    reportLayout: "legacy",
+    reportLayout: "groupedByFinding",
     proposal: {
       planName: "外壁・シーリングまわりを中心にしたご提案",
       scope: "外壁の下地処理、ひび補修、シーリング（目地の防水材）まわりの確認、必要箇所の塗装を中心に検討します。",
@@ -861,14 +861,7 @@
 
   function renderReportLayoutSelector() {
     return el("div", { className: "report-layout-selector" }, [
-      selectField(
-        "PDF・プレビュー表示形式",
-        state.reportLayout || "legacy",
-        ["legacy", "groupedByFinding"],
-        (value) => update("reportLayout", value),
-        (value) => (value === "groupedByFinding" ? "確認項目ごとに関連写真を表示" : "従来形式"),
-      ),
-      el("p", { text: "従来形式では、これまで通り確認項目と写真を分けて表示します。" }),
+      el("p", { text: "PDF・プレビューでは、確認項目ごとに関連写真をまとめて表示します。" }),
     ]);
   }
 
@@ -1916,7 +1909,7 @@
   }
 
   function isGroupedReportLayout() {
-    return state.reportLayout === "groupedByFinding";
+    return true;
   }
 
   function renderFindingReportSection() {
@@ -5819,7 +5812,7 @@
     });
     target.project.buildingType = normalizeOptionText(target.project.buildingType);
     target.project.projectType = normalizeOptionText(target.project.projectType);
-    target.reportLayout = target.reportLayout === "groupedByFinding" ? "groupedByFinding" : "legacy";
+    target.reportLayout = "groupedByFinding";
     if (typeof target.showRepairProcess === "boolean") {
       target.processDiagram = target.processDiagram || {};
       target.processDiagram.enabled = target.showRepairProcess;
