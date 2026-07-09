@@ -1509,13 +1509,41 @@ textarea:focus {
 }
 
 .proposal-ai-button,
-.section-ai-button {
+.section-ai-button,
+.proposal-field-ai-button {
   min-height: 34px;
   max-width: 220px;
   padding-block: 6px;
   line-height: 1.35;
   text-align: center;
   white-space: normal;
+}
+
+.proposal-supplement-field {
+  min-width: 0;
+}
+
+.proposal-supplement-field.full {
+  grid-column: 1 / -1;
+}
+
+.field-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 0;
+}
+
+.field-label-row label {
+  min-width: 0;
+}
+
+.proposal-field-ai-button {
+  flex: 0 0 auto;
+  min-height: 30px;
+  padding: 4px 11px;
+  font-size: 12px;
 }
 
 .panel-action-row {

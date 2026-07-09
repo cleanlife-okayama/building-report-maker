@@ -990,16 +990,54 @@
     ]);
   }
 
+  function renderProposalSupplementAiField(label, value, onInput, ruleKey, fieldKey, className = "") {
+    return countedTextField(
+      label,
+      value,
+      onInput,
+      textLimit(ruleKey),
+      `proposal-supplement-field full ${className}`.trim(),
+      true,
+      undefined,
+      button("AI文章相談", "btn small proposal-field-ai-button", () => copyProposalSupplementAiConsultationPrompt(fieldKey)),
+    );
+  }
+
   function renderProposalPanel() {
     return panel("3. おすすめする施工方針", [
       el("div", { className: "form-grid" }, [
         inputField("ご提案内容", state.proposal.planName, (v) => update("proposal.planName", v), "full", "text", undefined, textLimit("proposalPlanName")),
         textareaField("おすすめする施工方針", state.summary.recommendation, (v) => update("summary.recommendation", v), "full important-input", undefined, textLimit("proposalRecommendation")),
         textareaField("主な工事内容", state.proposal.scope, (v) => update("proposal.scope", v), "full important-input", undefined, textLimit("proposalScope")),
-        textareaField("4. あわせておすすめしたい対策", state.summary.additionalRecommendations, (v) => update("summary.additionalRecommendations", v), "full important-input", undefined, textLimit("proposalAdditional")),
-        textareaField("5. 工事中に確認が必要なこと", state.proposal.cautions, (v) => update("proposal.cautions", v), "full", undefined, textLimit("proposalCautions")),
-        textareaField("今後注意しておきたい点", state.proposal.watchPoint, (v) => update("proposal.watchPoint", v), "full", undefined, textLimit("proposalWatchPoint")),
-        textareaField("最後にお伝えしたいこと", state.proposal.closing, (v) => update("proposal.closing", v), "full", undefined, textLimit("proposalClosing")),
+        renderProposalSupplementAiField(
+          "4. あわせておすすめしたい対策",
+          state.summary.additionalRecommendations,
+          (v) => update("summary.additionalRecommendations", v),
+          "proposalAdditional",
+          "additional",
+          "important-input",
+        ),
+        renderProposalSupplementAiField(
+          "5. 工事中に確認が必要なこと",
+          state.proposal.cautions,
+          (v) => update("proposal.cautions", v),
+          "proposalCautions",
+          "cautions",
+        ),
+        renderProposalSupplementAiField(
+          "今後注意しておきたい点",
+          state.proposal.watchPoint,
+          (v) => update("proposal.watchPoint", v),
+          "proposalWatchPoint",
+          "watchPoint",
+        ),
+        renderProposalSupplementAiField(
+          "最後にお伝えしたいこと",
+          state.proposal.closing,
+          (v) => update("proposal.closing", v),
+          "proposalClosing",
+          "closing",
+        ),
       ]),
       renderProcessDiagramEditor(),
     ], el("div", { className: "panel-action-row" }, [
@@ -2295,7 +2333,7 @@
     ]);
   }
 
-  function countedTextField(label, value, onInput, limit, className = "", multiline = false, placeholder) {
+  function countedTextField(label, value, onInput, limit, className = "", multiline = false, placeholder, labelAction) {
     const currentValue = safeText(value);
     const placeholderText = placeholder === undefined ? fieldPlaceholders[label] || "" : placeholder;
     const countNode = el("span", { className: "character-count" });
@@ -2315,8 +2353,15 @@
     });
     updateCharacterCount(currentValue, limit, countNode, warningNode);
 
+    const labelNode = labelAction
+      ? el("div", { className: "field-label-row" }, [
+          el("label", { text: label }),
+          labelAction,
+        ])
+      : el("label", { text: label });
+
     return el("div", { className: `field counted-field ${className}`.trim() }, [
-      el("label", { text: label }),
+      labelNode,
       input,
       el("div", { className: "character-count-row" }, [warningNode, countNode]),
     ]);
@@ -4292,6 +4337,93 @@
       "【主な工事内容】220字以内\n" +
       "各欄の文字数目安内で、必要な説明は省略しすぎず、お客様が納得して判断できる文章にしてください。短くまとめることよりも、分かりやすく伝わることを優先してください。"
     );
+  }
+
+  function proposalSupplementAiConfig(fieldKey) {
+    const configs = {
+      additional: {
+        label: "あわせておすすめしたい対策",
+        ruleKey: "proposalAdditional",
+        value: () => state.summary.additionalRecommendations,
+        guidance:
+          "今回の確認内容や施工方針をもとに、追加で確認・検討しておくと安心な対策を、お客様に分かりやすく整理してください。強い売り込みではなく、「あわせて確認・検討すると安心」という表現にしてください。",
+      },
+      cautions: {
+        label: "工事中に確認が必要なこと",
+        ruleKey: "proposalCautions",
+        value: () => state.proposal.cautions,
+        guidance:
+          "施工中に確認しておくべき箇所、下地・漏水・劣化範囲・追加補修の可能性などを、分かりやすく整理してください。断定しすぎず、「確認が必要です」「状態に応じて判断します」などの表現を使ってください。",
+      },
+      watchPoint: {
+        label: "今後注意しておきたい点",
+        ruleKey: "proposalWatchPoint",
+        value: () => state.proposal.watchPoint,
+        guidance:
+          "工事後や今後の維持管理で注意したい点を整理してください。不安をあおりすぎず、定期確認や早めの相談につながる自然な文章にしてください。",
+      },
+      closing: {
+        label: "最後にお伝えしたいこと",
+        ruleKey: "proposalClosing",
+        value: () => state.proposal.closing,
+        guidance:
+          "現状のPDF文字数目安に収まる範囲で、今回の工事に対する考え方や、お客様が安心して判断できる補足を自然に含めてください。強い売り込み文にはせず、必要な工事と急がなくてよい工事を分けて考える姿勢、無理のない進め方、工事後も相談しやすいことなどを自然に伝えてください。",
+      },
+    };
+    return configs[fieldKey] || null;
+  }
+
+  function buildProposalSupplementAiConsultationPrompt(fieldKey) {
+    const config = proposalSupplementAiConfig(fieldKey);
+    if (!config) return "";
+    const valueOrBlank = (value) => safeText(value).trim() || "未入力";
+    const limit = textLimit(config.ruleKey);
+    return (
+      "【AI相談用プロンプト】\n\n" +
+      "これはアプリ機能の一つです。作成した文章は、建物調査報告書メーカーの該当入力欄へコピーして使用します。前置きや感想、余計な補足説明は入れず、そのまま貼り付けやすい形で回答してください。\n\n" +
+      "このAI回答は、新しく診断を確定するものではありません。担当者の入力内容と、確認項目・写真情報・施工方針をもとに、一般のお客様にも伝わる自然な文章へ整える補助です。\n\n" +
+      AI_WRITING_GUIDANCE +
+      "\n\n" +
+      "【この欄の相談方針】\n" +
+      `${config.guidance}\n\n` +
+      "【現在のこの欄の入力内容】\n" +
+      `${config.label}：${valueOrBlank(config.value())}\n\n` +
+      "【施工方針の入力内容】\n" +
+      `ご提案内容：${valueOrBlank(state.proposal.planName)}\n` +
+      `おすすめする施工方針：${valueOrBlank(state.summary.recommendation)}\n` +
+      `主な工事内容：${valueOrBlank(state.proposal.scope)}\n` +
+      `あわせておすすめしたい対策：${valueOrBlank(state.summary.additionalRecommendations)}\n` +
+      `工事中に確認が必要なこと：${valueOrBlank(state.proposal.cautions)}\n` +
+      `今後注意しておきたい点：${valueOrBlank(state.proposal.watchPoint)}\n` +
+      `最後にお伝えしたいこと：${valueOrBlank(state.proposal.closing)}\n\n` +
+      "【回答形式】\n" +
+      "回答は次の見出しだけにしてください。見出し名は変更せず、ほかの見出し、前置き、感想、解説、総評は書かないでください。\n\n" +
+      `【${config.label}】\n本文\n\n` +
+      "【文字数の目安】\n" +
+      `【${config.label}】${limit}字以内\n` +
+      "PDF上で読みやすく収まるよう、文字数目安内で自然な文章にしてください。入力内容にある理由、背景、お客様の不安、現場状況はできるだけ活かしてください。\n\n" +
+      "【注意事項】\n" +
+      "写真や入力内容だけで断定できないことは断定しないでください。\n" +
+      "「可能性があります」「確認が必要です」「おすすめします」などの表現を使ってください。\n" +
+      "強い売り込みや不安をあおる表現は避けてください。\n" +
+      "回答は、そのまま該当欄へ貼り付けやすい文章にしてください。"
+    );
+  }
+
+  async function copyProposalSupplementAiConsultationPrompt(fieldKey) {
+    const config = proposalSupplementAiConfig(fieldKey);
+    if (!config) return;
+    const prompt = `${buildProposalSupplementAiConsultationPrompt(fieldKey)}\n\n${buildProposalFindingsAiReference()}`;
+    if (await copyPlainText(prompt)) {
+      showToast(
+        `${config.label}のAI相談文をコピーしました。\n` +
+          "ChatGPTやGeminiなどのAIへ貼り付けて、文章案を確認してください。\n" +
+          "AIの回答は参考です。最終的な内容は担当者が確認してください。",
+        5200,
+      );
+    } else {
+      window.alert(`${config.label}のAI相談文をコピーできませんでした。\n\n${prompt}`);
+    }
   }
 
   async function copyProposalAiConsultationPrompt() {
