@@ -450,8 +450,6 @@
         ]),
       ]),
       el("div", { className: "header-actions" }, [
-        renderSaveStatus(),
-        button("見本を入れる", "btn", loadSample),
         button("入力チェック", "btn", () => showInputCheckDialog()),
         button("名前を付けて保存", "btn", saveDataAs),
         button("上書き保存", "btn warn", saveCurrentReport),
@@ -1804,13 +1802,40 @@
     return el("aside", { className: "preview-wrap" }, [
       el("div", { className: "preview-toolbar" }, [
         el("h2", { text: "報告書プレビュー" }),
-        el("div", { className: "row-actions" }, [
-          button("上書き保存", "btn small", saveCurrentReport),
-          button("印刷 / PDF", "btn primary small", requestPrint),
-        ]),
+        renderPreviewSaveStatus(),
       ]),
       renderReport(),
     ]);
+  }
+
+  function renderPreviewSaveStatus() {
+    return el(
+      "div",
+      { id: "preview-save-status", className: `preview-save-status ${saveStatus.failed ? "failed" : ""}`.trim() },
+      previewSaveStatusNodes(),
+    );
+  }
+
+  function saveStatusSummaryNodes() {
+    return [
+      el("strong", { text: saveStatus.label }),
+      saveStatus.detail ? el("span", { text: saveStatus.detail }) : "",
+    ];
+  }
+
+  function saveStatusFullNodes() {
+    return [
+      el("span", { text: `現在の報告書：${currentReportName}` }),
+      el("span", { text: `保存先：${currentLocationLabel}` }),
+      ...saveStatusSummaryNodes(),
+    ];
+  }
+
+  function previewSaveStatusNodes() {
+    return [
+      el("div", { className: "preview-save-status-main" }, [el("strong", { text: saveStatus.label })]),
+      saveStatus.detail ? el("div", { className: "preview-save-status-detail" }, [el("span", { text: saveStatus.detail })]) : "",
+    ];
   }
 
   function renderReport() {
@@ -5020,12 +5045,16 @@
   }
 
   function updateSaveStatusView() {
-    const node = document.getElementById("save-status");
-    if (!node) return;
-    node.className = `save-status ${saveStatus.failed ? "failed" : ""}`.trim();
-    node.innerHTML = "";
-    node.appendChild(el("strong", { text: saveStatus.label }));
-    if (saveStatus.detail) node.appendChild(el("span", { text: saveStatus.detail }));
+    const headerStatus = document.getElementById("save-status");
+    if (headerStatus) {
+      headerStatus.className = `save-status ${saveStatus.failed ? "failed" : ""}`.trim();
+      headerStatus.replaceChildren(...saveStatusFullNodes().filter(Boolean));
+    }
+    const previewStatus = document.getElementById("preview-save-status");
+    if (previewStatus) {
+      previewStatus.className = `preview-save-status ${saveStatus.failed ? "failed" : ""}`.trim();
+      previewStatus.replaceChildren(...previewSaveStatusNodes().filter(Boolean));
+    }
   }
 
   function formatTime(date) {

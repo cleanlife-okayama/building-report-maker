@@ -1735,6 +1735,57 @@ textarea:focus {
   font-size: 15px;
 }
 
+.preview-save-status {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  max-width: min(100%, 520px);
+  text-align: left;
+}
+
+.preview-save-status-main,
+.preview-save-status-detail {
+  min-height: 42px;
+  display: grid;
+  align-content: center;
+  padding: 8px 13px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--ok-soft);
+  line-height: 1.35;
+}
+
+.preview-save-status-main {
+  color: var(--ok);
+}
+
+.preview-save-status-main strong {
+  font-size: 16px;
+}
+
+.preview-save-status-detail {
+  max-width: 360px;
+}
+
+.preview-save-status-detail span {
+  color: var(--muted);
+  font-size: 16px;
+  font-weight: 800;
+}
+
+.preview-save-status.failed .preview-save-status-main,
+.preview-save-status.failed .preview-save-status-detail {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+.preview-save-status.failed .preview-save-status-detail span {
+  color: var(--danger);
+}
+
 .report {
   overflow: visible;
   border: 1px solid var(--line);
