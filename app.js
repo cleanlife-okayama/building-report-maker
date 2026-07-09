@@ -534,6 +534,15 @@
     target.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
+  function focusWithoutJump(target) {
+    if (!target || typeof target.focus !== "function") return;
+    try {
+      target.focus({ preventScroll: true });
+    } catch (error) {
+      target.focus();
+    }
+  }
+
   function setupInputSectionNavigation() {
     if (sectionNavigationScrollHandler) {
       window.removeEventListener("scroll", sectionNavigationScrollHandler);
@@ -703,7 +712,7 @@
   }
 
   function renderFindingCard(finding, index) {
-    return el("article", { className: "finding-card" }, [
+    return el("article", { className: "finding-card", "data-finding-id": finding.id, tabindex: "-1" }, [
       el("div", { className: "finding-card-header" }, [
         el("div", { className: "finding-title" }, [
           inputField(
@@ -910,9 +919,10 @@
 
   function renderPhotoCard(photo, index) {
     const findingText = photo.finding || photo.memo || "";
-    return el("article", { className: "photo-card" }, [
+    return el("article", { className: "photo-card", "data-photo-id": photo.id, tabindex: "-1" }, [
       el("div", { className: "photo-form" }, [
         el("div", { className: "thumb-wrap" }, [
+          el("span", { className: "photo-number-badge", text: `写真${index + 1}` }),
           photo.src
             ? renderAnnotatedImage(photo, "photo-thumb", photo.title || "現場写真", "cover")
             : el("div", { className: "photo-missing thumb-missing", text: "写真なし" }),
@@ -1781,21 +1791,117 @@
     ]);
   }
 
-  function renderInputIssueGroup(title, issues, level) {
+  function renderInputIssueGroup(title, issues, level, onIssueClick = navigateToInputIssue) {
     if (!issues.length) return "";
     return el("section", { className: `input-issue-group ${level}` }, [
       el("h3", { text: `${title}（${issues.length}件）` }),
       el(
         "ul",
         {},
-        issues.map((issue) =>
-          el("li", {}, [
-            el("strong", { text: issue.title }),
-            el("span", { text: issue.message }),
-          ]),
-        ),
+        issues.map((issue) => renderInputIssueItem(issue, onIssueClick)),
       ),
     ]);
+  }
+
+  function renderInputIssueItem(issue, onIssueClick) {
+    const canNavigate = Boolean(issue.sectionId || issue.photoId || issue.findingId);
+    const props = canNavigate
+      ? {
+          className: "input-issue-clickable",
+          role: "button",
+          tabindex: "0",
+          title: "この項目へ移動します",
+          onclick: () => onIssueClick(issue),
+          onkeydown: (event) => {
+            if (event.key !== "Enter" && event.key !== " ") return;
+            event.preventDefault();
+            onIssueClick(issue);
+          },
+        }
+      : {};
+    return el("li", props, [
+      el("strong", { text: issue.title }),
+      el("span", { text: issue.message }),
+    ]);
+  }
+
+  function normalizeIssueSectionName(value) {
+    return String(value || "").replace(/\s+/g, "");
+  }
+
+  function issueTargetForSection(section) {
+    const sectionName = normalizeIssueSectionName(section);
+    if (!sectionName) return {};
+    const matchedSection = inputSectionNavigation.find((item) => {
+      const label = normalizeIssueSectionName(item.label);
+      return label === sectionName || label.includes(sectionName) || sectionName.includes(label);
+    });
+    return matchedSection ? { sectionId: matchedSection.id } : {};
+  }
+
+  function applyInputIssueTarget(issue) {
+    if (!issue || typeof issue !== "object") return;
+    const title = String(issue.title || "");
+    if (title.includes("未分類写真")) {
+      const photo = getUnclassifiedPhotos()[0];
+      issue.sectionId = "section-photos";
+      if (photo?.id) issue.photoId = photo.id;
+      return;
+    }
+    const photoMatch = title.match(/^写真(\d+)/);
+    if (photoMatch) {
+      const photo = state.photos[Number(photoMatch[1]) - 1];
+      if (photo?.id) {
+        issue.sectionId = "section-photos";
+        issue.photoId = photo.id;
+        return;
+      }
+    }
+    const findingMatch = title.match(/^確認項目(\d+)/);
+    if (findingMatch) {
+      const finding = state.findings[Number(findingMatch[1]) - 1];
+      if (finding?.id) {
+        issue.sectionId = "section-findings";
+        issue.findingId = finding.id;
+        return;
+      }
+    }
+    Object.assign(issue, issueTargetForSection(issue.section));
+  }
+
+  function findInputIssueTarget(issue) {
+    if (issue.photoId) {
+      return Array.from(document.querySelectorAll("[data-photo-id]")).find((node) => node.dataset.photoId === issue.photoId) || null;
+    }
+    if (issue.findingId) {
+      return Array.from(document.querySelectorAll("[data-finding-id]")).find((node) => node.dataset.findingId === issue.findingId) || null;
+    }
+    return null;
+  }
+
+  function highlightInputIssueTarget(target) {
+    target.classList.remove("input-issue-target-highlight");
+    void target.offsetWidth;
+    target.classList.add("input-issue-target-highlight");
+    window.setTimeout(() => target.classList.remove("input-issue-target-highlight"), 2200);
+  }
+
+  function navigateToInputIssue(issue) {
+    const sectionId = issue.sectionId || issueTargetForSection(issue.section).sectionId;
+    if (sectionId) scrollToInputSection(sectionId);
+    window.setTimeout(() => {
+      const specificTarget = findInputIssueTarget(issue);
+      if (specificTarget) {
+        specificTarget.scrollIntoView({ behavior: "smooth", block: "center" });
+        highlightInputIssueTarget(specificTarget);
+        focusWithoutJump(specificTarget);
+        return;
+      }
+      const sectionTarget = sectionId ? document.getElementById(sectionId) : null;
+      if (!sectionTarget) return;
+      highlightInputIssueTarget(sectionTarget);
+      focusWithoutJump(sectionTarget);
+    }, 140);
   }
 
   function renderPreview() {
@@ -2462,6 +2568,7 @@
       });
     }
 
+    issues.forEach(applyInputIssueTarget);
     return issues;
   }
 
@@ -2472,10 +2579,14 @@
     const recommendedIssues = issues.filter((issue) => issue.level === "recommended");
 
     return new Promise((resolve) => {
+      const handleIssueClick = (issue) => {
+        finish(false);
+        window.setTimeout(() => navigateToInputIssue(issue), 0);
+      };
       const results = issues.length
         ? el("div", { className: "input-check-results" }, [
-            renderInputIssueGroup("要確認", requiredIssues, "required"),
-            renderInputIssueGroup("確認推奨", recommendedIssues, "recommended"),
+            renderInputIssueGroup("要確認", requiredIssues, "required", handleIssueClick),
+            renderInputIssueGroup("確認推奨", recommendedIssues, "recommended", handleIssueClick),
           ])
         : el("div", { className: "input-check-success", text: "大きな入力漏れは見つかりませんでした。" });
       const overlay = el("div", { className: "confirm-screen" }, [
