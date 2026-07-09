@@ -1795,13 +1795,14 @@ textarea:focus {
 }
 
 .preview-wrap {
-  position: sticky;
-  top: 86px;
   display: grid;
   gap: 12px;
 }
 
 .preview-toolbar {
+  position: sticky;
+  top: 86px;
+  z-index: 20;
   display: flex;
   justify-content: space-between;
   gap: 10px;
@@ -1810,6 +1811,8 @@ textarea:focus {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 10px 24px rgba(31, 31, 31, 0.06);
 }
 
 .preview-toolbar h2 {
@@ -3662,6 +3665,10 @@ textarea:focus {
   }
 
   .preview-wrap {
+    position: static;
+  }
+
+  .preview-toolbar {
     position: static;
   }
 }
