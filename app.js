@@ -2119,14 +2119,16 @@
   }
 
   function renderGroupedFindingPhotoReportContent() {
-    const blocks = state.findings.map((finding) => {
+    const blocks = state.findings.flatMap((finding) => {
       const relatedPhotos = state.photos.filter((photo) => photo.findingId === finding.id);
-      return el("div", { className: "grouped-finding-report-block" }, [
-        renderGroupedFindingSummary(finding),
-        relatedPhotos.length ? renderRelatedPhotoDigest(relatedPhotos) : "",
+      return [
+        el("div", { className: "grouped-finding-report-block" }, [
+          renderGroupedFindingSummary(finding),
+          relatedPhotos.length ? renderRelatedPhotoDigest(relatedPhotos) : "",
+        ]),
         relatedPhotos.length ? renderGroupedPhotoList("関連写真", relatedPhotos) : "",
-      ]);
-    });
+      ];
+    }).filter(Boolean);
     return blocks.length
       ? el("div", { className: "grouped-finding-photo-report" }, blocks)
       : el("div", { className: "empty", text: "確認項目と写真はまだ入力されていません" });
@@ -2150,7 +2152,7 @@
   }
 
   function renderRelatedPhotoDigest(photos) {
-    const maxDigestPhotos = 8;
+    const maxDigestPhotos = 7;
     const digestPhotos = photos.slice(0, maxDigestPhotos);
     const remainingCount = Math.max(photos.length - maxDigestPhotos, 0);
     return el("div", { className: "related-photo-digest" }, [
@@ -2204,12 +2206,34 @@
     const blocksClassName = ["photo-report-page-blocks", options.blocksClassName || ""].filter(Boolean).join(" ");
     const gridClassName = ["photo-report-grid", options.gridClassName || ""].filter(Boolean).join(" ");
     const cardClassName = options.cardClassName || "";
-    return el("div", { className: blocksClassName }, chunkItems(photos, 2).map((photoChunk) =>
+    return el("div", { className: blocksClassName }, chunkPhotoReportItems(photos).map((photoChunk) =>
       el("div", { className: "photo-report-page-block" }, [
         renderPhotoReportPageHeader(title),
         el("div", { className: gridClassName }, photoChunk.map((photo) => renderPhotoReportFigure(photo, cardClassName))),
       ]),
     ));
+  }
+
+  function chunkPhotoReportItems(photos) {
+    const chunks = [];
+    let pair = [];
+    photos.forEach((photo) => {
+      if (isWidePhoto(photo)) {
+        if (pair.length) {
+          chunks.push(pair);
+          pair = [];
+        }
+        chunks.push([photo]);
+        return;
+      }
+      pair.push(photo);
+      if (pair.length === 2) {
+        chunks.push(pair);
+        pair = [];
+      }
+    });
+    if (pair.length) chunks.push(pair);
+    return chunks;
   }
 
   function renderPhotoReportFigure(photo, extraClassName = "") {

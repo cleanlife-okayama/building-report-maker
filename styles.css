@@ -4385,17 +4385,29 @@ textarea:focus {
   }
 
   .grouped-finding-photo-report {
+    display: block;
     gap: 5mm;
   }
 
   .grouped-finding-report-block {
+    margin-bottom: 5mm;
     gap: 3.5mm;
     break-inside: auto;
     page-break-inside: auto;
   }
 
   .grouped-related-photos {
+    display: block;
     gap: 2.8mm;
+    break-before: page;
+    page-break-before: always;
+    break-after: page;
+    page-break-after: always;
+  }
+
+  .grouped-related-photos + .grouped-finding-report-block {
+    break-before: page;
+    page-break-before: always;
   }
 
   .related-photo-digest + .grouped-related-photos {
