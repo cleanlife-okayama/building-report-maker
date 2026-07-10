@@ -2554,8 +2554,48 @@ textarea:focus {
   break-inside: auto;
 }
 
+.grouped-finding-chapter-heading {
+  break-after: avoid;
+  page-break-after: avoid;
+}
+
+.grouped-finding-chapter-heading h2 {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 2px;
+  color: var(--brand);
+  font-size: 17px;
+  line-height: 1.35;
+  letter-spacing: 0;
+  opacity: 0.9;
+}
+
+.grouped-finding-chapter-heading h2::before {
+  content: "";
+  width: 6px;
+  height: 19px;
+  border-radius: 999px;
+  background:
+    linear-gradient(180deg, var(--brand) 0%, var(--brand-strong) 100%);
+  box-shadow: 0 4px 8px rgba(111, 20, 25, 0.12);
+}
+
+.grouped-finding-chapter-heading h2::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  min-width: 80px;
+  background: linear-gradient(90deg, rgba(139, 30, 36, 0.28), transparent);
+}
+
 .grouped-finding-summary {
   margin-bottom: 0;
+}
+
+.grouped-finding-summary h3 {
+  font-size: 24px;
+  line-height: 1.35;
 }
 
 .grouped-related-photos {
@@ -2699,6 +2739,12 @@ textarea:focus {
   margin: 0;
   font-size: 17px;
   line-height: 1.45;
+}
+
+.photo-report-page-context {
+  color: #7f7374;
+  font-size: 0.78em;
+  font-weight: 800;
 }
 
 .photo-report-page-header p {
@@ -4462,6 +4508,34 @@ textarea:focus {
     page-break-inside: auto;
   }
 
+  .grouped-finding-chapter-heading {
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .grouped-finding-chapter-heading h2 {
+    margin: 0 0 1mm;
+    font-size: 11.8pt;
+    line-height: 1.32;
+    break-after: avoid;
+    page-break-after: avoid;
+  }
+
+  .grouped-finding-chapter-heading h2::before {
+    width: 1.3mm;
+    height: 5.2mm;
+    box-shadow: none;
+  }
+
+  .grouped-finding-chapter-heading h2::after {
+    min-width: 18mm;
+  }
+
+  .grouped-finding-summary h3 {
+    font-size: 16.8pt;
+    line-height: 1.28;
+  }
+
   .grouped-related-photos {
     display: block;
     gap: 2.8mm;
@@ -4577,6 +4651,10 @@ textarea:focus {
 
   .photo-report-page-header h3 {
     font-size: 12pt;
+  }
+
+  .photo-report-page-context {
+    font-size: 0.76em;
   }
 
   .photo-report-page-header p {

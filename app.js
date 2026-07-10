@@ -49,6 +49,7 @@
   const photoPriorityConditions = ["使用上の支障あり", "安全面の確認が必要"];
   const PHOTO_PRIORITY_REPORT_TITLE = "特に確認しておきたい写真";
   const PHOTO_PRIORITY_REPORT_NOTE = "この箇所は、補修方針を考えるうえで優先して確認したい写真です。";
+  const FINDING_PHOTO_REPORT_SECTION_TITLE = "1. 調査写真・確認項目ごとの確認結果";
   const projectOptions = ["外壁塗装", "屋根塗装", "防水工事", "雨漏り確認", "美装・補修", "リフォーム", "節電ガラスコート", "その他"];
   const buildingTypeOptions = ["戸建て", "アパート", "店舗", "倉庫", "事務所", "その他"];
   const surveyTimeOptions = createTimeOptions();
@@ -2036,7 +2037,7 @@
           ]),
         ]),
         renderAssessmentReport(),
-        reportSection("1. 調査写真・確認項目ごとの確認結果", [
+        reportSection(FINDING_PHOTO_REPORT_SECTION_TITLE, [
           ...findingPhotoReportChildren,
         ], "photo-section"),
         reportSection("2. おすすめする施工方針", [
@@ -2129,14 +2130,16 @@
   }
 
   function renderGroupedFindingPhotoReportContent() {
-    const blocks = state.findings.flatMap((finding) => {
+    const blocks = state.findings.flatMap((finding, index) => {
       const relatedPhotos = state.photos.filter((photo) => photo.findingId === finding.id);
+      const photoContextLabel = findingReportItemContextLabel(finding, index);
       return [
         el("div", { className: "grouped-finding-report-block" }, [
-          renderGroupedFindingSummary(finding),
+          index > 0 ? renderGroupedFindingChapterHeading() : "",
+          renderGroupedFindingSummary(finding, index),
           relatedPhotos.length ? renderRelatedPhotoDigest(relatedPhotos) : "",
         ]),
-        relatedPhotos.length ? renderGroupedPhotoList("関連写真", relatedPhotos) : "",
+        relatedPhotos.length ? renderGroupedPhotoList("関連写真", relatedPhotos, photoContextLabel) : "",
       ];
     }).filter(Boolean);
     return blocks.length
@@ -2144,16 +2147,30 @@
       : el("div", { className: "empty", text: "確認項目と写真はまだ入力されていません" });
   }
 
+  function renderGroupedFindingChapterHeading() {
+    return el("div", { className: "grouped-finding-chapter-heading" }, [
+      el("h2", { text: FINDING_PHOTO_REPORT_SECTION_TITLE }),
+    ]);
+  }
+
+  function findingReportItemContextLabel(finding, index = 0) {
+    return `1-${index + 1} ${safeText(finding.area || "確認項目")}`;
+  }
+
+  function findingReportItemTitle(finding, index = 0) {
+    return `1-${index + 1}. ${safeText(finding.area || "確認項目")}`;
+  }
+
   function getUnclassifiedPhotos() {
     const validFindingIds = new Set(state.findings.map((finding) => finding.id).filter(Boolean));
     return state.photos.filter((photo) => !photo.findingId || !validFindingIds.has(photo.findingId));
   }
 
-  function renderGroupedFindingSummary(finding) {
+  function renderGroupedFindingSummary(finding, index = 0) {
     return el("div", { className: "finding-report grouped-finding-summary" }, [
       el("div", {}, [priorityBadge(finding.priority), finding.condition ? el("p", { style: "margin-top:8px", text: finding.condition }) : ""]),
       el("div", {}, [
-        el("h3", { text: finding.area || "確認項目" }),
+        el("h3", { text: findingReportItemTitle(finding, index) }),
         findingTopic("確認内容", finding.observation),
         findingTopic("考えられること", finding.concern),
         findingTopic("対応の考え方", finding.proposal),
@@ -2188,12 +2205,13 @@
     ]);
   }
 
-  function renderGroupedPhotoList(title, photos) {
+  function renderGroupedPhotoList(title, photos, contextLabel = "") {
     return el("div", { className: "grouped-related-photos" }, [
       renderPhotoReportPageBlocks(title, photos, {
         blocksClassName: "grouped-photo-report-page-blocks",
         gridClassName: "grouped-photo-report-grid",
         cardClassName: "grouped-photo-report",
+        contextLabel,
       }),
     ]);
   }
@@ -2206,9 +2224,12 @@
     return chunks;
   }
 
-  function renderPhotoReportPageHeader(title, note = "") {
+  function renderPhotoReportPageHeader(title, note = "", contextLabel = "") {
     return el("div", { className: "photo-report-page-header" }, [
-      el("h3", { text: title }),
+      el("h3", {}, [
+        el("span", { text: title }),
+        contextLabel ? el("span", { className: "photo-report-page-context", text: `｜${contextLabel}` }) : "",
+      ]),
       note ? el("p", { text: note }) : "",
     ]);
   }
@@ -2223,6 +2244,7 @@
         renderPhotoReportPageHeader(
           isPriorityChunk ? PHOTO_PRIORITY_REPORT_TITLE : title,
           isPriorityChunk ? PHOTO_PRIORITY_REPORT_NOTE : "",
+          options.contextLabel || "",
         ),
         el("div", { className: gridClassName }, photoChunk.map((photo) => renderPhotoReportFigure(photo, cardClassName))),
       ]);
