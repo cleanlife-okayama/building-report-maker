@@ -46,6 +46,9 @@
 
   const areaOptions = ["外壁", "屋根", "シーリング（目地の防水材）", "ベランダ防水", "雨樋", "窓まわり", "基礎", "付帯部（雨樋・破風など）", "その他"];
   const conditionOptions = ["問題なし", "要確認", "軽微な劣化", "経年劣化が見られる", "劣化・不具合が見られる", "使用上の支障あり", "安全面の確認が必要"];
+  const photoPriorityConditions = ["使用上の支障あり", "安全面の確認が必要"];
+  const PHOTO_PRIORITY_REPORT_TITLE = "特に確認しておきたい写真";
+  const PHOTO_PRIORITY_REPORT_NOTE = "この箇所は、補修方針を考えるうえで優先して確認したい写真です。";
   const projectOptions = ["外壁塗装", "屋根塗装", "防水工事", "雨漏り確認", "美装・補修", "リフォーム", "節電ガラスコート", "その他"];
   const buildingTypeOptions = ["戸建て", "アパート", "店舗", "倉庫", "事務所", "その他"];
   const surveyTimeOptions = createTimeOptions();
@@ -955,7 +958,14 @@
             inputField("写真タイトル", photo.title, (v) => patchPhoto(photo.id, "title", v), "", "text", undefined, textLimit("photoTitle")),
             photoFindingField(photo),
             inputField("撮影箇所", photo.area, (v) => patchPhoto(photo.id, "area", v), "", "text", "例：西面外壁／キッチン流し台／リビング天井", textLimit("photoAreaOther")),
-            selectFieldWithOther("調査結果の目安", photo.condition || "", conditionOptions, (v) => patchPhoto(photo.id, "condition", v), undefined, textLimit("photoConditionOther")),
+            el("div", { className: "field photo-condition-field" }, [
+              el("label", { text: "調査結果の目安" }),
+              selectInlineWithOther(photo.condition || "", conditionOptions, (v) => patchPhoto(photo.id, "condition", v), photoConditionOptionLabel, textLimit("photoConditionOther")),
+              el("span", {
+                className: "field-hint photo-priority-hint",
+                text: "「PDF重点表示」の項目を選ぶと、印刷/PDFでは「特に確認しておきたい写真」として1枚で大きめに表示されます。",
+              }),
+            ]),
             textareaField("現在の状態", findingText, (v) => patchPhoto(photo.id, "finding", v), "full", undefined, textLimit("photoFinding")),
             textareaField("この箇所の対応目安", photo.recommendation, (v) => patchPhoto(photo.id, "recommendation", v), "full", undefined, textLimit("photoRecommendation")),
           ]),
@@ -2196,9 +2206,10 @@
     return chunks;
   }
 
-  function renderPhotoReportPageHeader(title) {
+  function renderPhotoReportPageHeader(title, note = "") {
     return el("div", { className: "photo-report-page-header" }, [
       el("h3", { text: title }),
+      note ? el("p", { text: note }) : "",
     ]);
   }
 
@@ -2206,12 +2217,16 @@
     const blocksClassName = ["photo-report-page-blocks", options.blocksClassName || ""].filter(Boolean).join(" ");
     const gridClassName = ["photo-report-grid", options.gridClassName || ""].filter(Boolean).join(" ");
     const cardClassName = options.cardClassName || "";
-    return el("div", { className: blocksClassName }, chunkPhotoReportItems(photos).map((photoChunk) =>
-      el("div", { className: "photo-report-page-block" }, [
-        renderPhotoReportPageHeader(title),
+    return el("div", { className: blocksClassName }, chunkPhotoReportItems(photos).map((photoChunk) => {
+      const isPriorityChunk = photoChunk.length === 1 && isPriorityPhoto(photoChunk[0]);
+      return el("div", { className: ["photo-report-page-block", isPriorityChunk ? "priority-photo-page-block" : ""].filter(Boolean).join(" ") }, [
+        renderPhotoReportPageHeader(
+          isPriorityChunk ? PHOTO_PRIORITY_REPORT_TITLE : title,
+          isPriorityChunk ? PHOTO_PRIORITY_REPORT_NOTE : "",
+        ),
         el("div", { className: gridClassName }, photoChunk.map((photo) => renderPhotoReportFigure(photo, cardClassName))),
-      ]),
-    ));
+      ]);
+    }));
   }
 
   function chunkPhotoReportItems(photos) {
@@ -2237,12 +2252,14 @@
   }
 
   function renderPhotoReportFigure(photo, extraClassName = "") {
-    const className = ["photo-report", isWidePhoto(photo) ? "wide" : "", extraClassName].filter(Boolean).join(" ");
+    const isPriority = isPriorityPhoto(photo);
+    const className = ["photo-report", isWidePhoto(photo) ? "wide" : "", isPriority ? "priority-photo-report" : "", extraClassName].filter(Boolean).join(" ");
     return el("figure", { className }, [
       photo.src
         ? renderAnnotatedImage(photo, "", photo.title || "現場写真", "cover")
         : el("div", { className: "photo-missing", text: "写真データを読み込めませんでした" }),
       el("figcaption", { className: "photo-caption" }, [
+        isPriority ? el("span", { className: "photo-priority-label", text: "重点確認" }) : "",
         el("strong", { text: photo.title || photo.area || "現場写真" }),
         el("dl", { className: "photo-detail-list" }, [
           photo.area ? detailItem("撮影箇所", photo.area) : "",
@@ -2267,8 +2284,16 @@
   }
 
   function isWidePhoto(photo) {
+    return isPriorityPhoto(photo) || isLongPhotoCard(photo);
+  }
+
+  function isPriorityPhoto(photo) {
+    return photoPriorityConditions.includes(safeText(photo.condition));
+  }
+
+  function isLongPhotoCard(photo) {
     const text = [photo.title, photo.area, photo.condition, photo.finding, photo.recommendation].join(" ");
-    return text.length > 260 || /優先対応|早期対応推奨|穴あき|雨漏り|雨水の浸入|腐食が進行/.test(text);
+    return textLength(text) > 260;
   }
 
   function detailItem(label, value) {
@@ -2428,6 +2453,10 @@
 
   function textLimit(ruleKey) {
     return PDF_TEXT_FIELD_RULES[ruleKey]?.maxLength || 0;
+  }
+
+  function photoConditionOptionLabel(option) {
+    return photoPriorityConditions.includes(option) ? `${option}（PDF重点表示）` : option;
   }
 
   function selectField(label, value, options, onInput, formatter = (v) => v) {
