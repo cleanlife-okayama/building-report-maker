@@ -168,9 +168,9 @@
     projectPurpose: { label: "調査目的", maxLength: 120, warningRatio: 0.85 },
     customerConcern: { label: "お客様のご不安・ご相談内容", maxLength: 260, warningRatio: 0.85 },
     assessmentDisplayText: { label: "表示文", maxLength: 16, warningRatio: 0.85 },
-    assessmentOverall: { label: "総合目安", maxLength: 120, warningRatio: 0.85 },
-    assessmentUrgency: { label: "緊急性について", maxLength: 160, warningRatio: 0.85 },
-    assessmentPolicy: { label: "おすすめの方向性", maxLength: 200, warningRatio: 0.85 },
+    assessmentOverall: { label: "総合目安", maxLength: 110, warningRatio: 0.85 },
+    assessmentUrgency: { label: "緊急性について", maxLength: 140, warningRatio: 0.85 },
+    assessmentPolicy: { label: "おすすめの方向性", maxLength: 160, warningRatio: 0.85 },
     findingAreaOther: { label: "確認項目タイトル", maxLength: 40, warningRatio: 0.85 },
     findingConditionOther: { label: "状態の自由入力", maxLength: 30, warningRatio: 0.85 },
     findingObservation: { label: "確認した内容", maxLength: 220, warningRatio: 0.85 },
@@ -881,7 +881,7 @@
       el("div", { className: "assessment-editor" }, [
         el("p", {
           className: "assessment-input-note",
-          text: "この欄はPDFの要約ページに表示されます。文字数が多いと、PDFで文字が重なる場合があります。目安文字数内で、短く要点をまとめてください。",
+          text: "この欄はPDFのP2要約ページに表示されます。詳しい工法・塗料名・貼替え内容・個別の施工範囲は後半の施工方針へ分け、ここでは「暑さ対策も考えた屋根保護」「長期にわたり建物を保護するための塗装」「雨水まわりとサビ対策」など、大きなテーマで短くまとめてください。",
         }),
         ...state.assessment.items.map((item) => assessmentItemField(item)),
         countedTextField(
@@ -4599,7 +4599,8 @@
         .join("\n\n");
       return (
         commonStart +
-        "今回選択されている6項目の程度と、3つの説明欄を分かりやすく整えてください。「緊急性について」は長文説明欄です。「目安：緊急性」の程度とは別の欄として扱ってください。\n\n" +
+        "今回選択されている6項目の程度と、3つの説明欄を分かりやすく整えてください。「緊急性について」は説明欄です。「目安：緊急性」の程度とは別の欄として扱ってください。\n" +
+        "このP2は詳しい施工説明ではなく、確認結果の要約ページです。詳しい工法、塗料名、貼替え内容、個別の施工範囲を詰め込みすぎず、お客様が「今どう考えればよいか」が分かる短い文章に整えてください。詳細な施工内容は後半の施工方針ページへ分ける前提にしてください。「おすすめの方向性」は、工事項目や材料名の列挙ではなく、暑さ対策も考えた屋根保護、長期にわたり建物を保護するための塗装、雨水まわりとサビ対策を優先した補修・塗替え、今後の維持管理を見据えた対策など、大きなテーマとして整理してください。\n\n" +
         "【現在の入力内容】\n" +
         `${assessmentInputs}\n\n` +
         `【総合目安】\n${valueOrBlank(state.assessment.overall)}\n\n` +
@@ -4611,10 +4612,10 @@
         "【緊急性について】\n本文\n\n" +
         "【おすすめの方向性】\n本文\n\n" +
         "【文字数の目安】\n" +
-        "【総合目安】120字以内\n" +
-        "【緊急性について】160字以内\n" +
-        "【おすすめの方向性】200字以内\n" +
-        "各欄の文字数目安内で、現在の評価と対応時期が分かりやすく伝わる文章にしてください。\n\n" +
+        "【総合目安】110字以内\n" +
+        "【緊急性について】140字以内\n" +
+        "【おすすめの方向性】160字以内\n" +
+        "各欄の文字数目安内で、現在の評価と対応時期が分かりやすく伝わる文章にしてください。「おすすめの方向性」は詳しい工法、塗料名、貼替え内容、個別の施工範囲の列挙ではなく、暑さ対策、長期的な建物保護、雨水まわりとサビ対策、今後の維持管理など、対応の大きな方向性を短くまとめてください。\n\n" +
         AI_OUTPUT_SAFETY_GUIDANCE
       );
     }
