@@ -4404,12 +4404,14 @@ textarea:focus {
     padding: 5mm 9mm 5.4mm 10mm;
     box-shadow: none;
     break-inside: avoid;
-    border-color: rgba(75, 66, 66, 0.16);
+    border-color: rgba(104, 45, 51, 0.23);
     border-radius: 1.4mm;
     background:
-      linear-gradient(135deg, rgba(31, 31, 31, 0.018), transparent 36%),
+      linear-gradient(135deg, rgba(99, 24, 31, 0.024), transparent 36%),
       linear-gradient(180deg, #fff 0%, #fdfcfa 100%);
-    box-shadow: inset 0.8mm 0 0 rgba(99, 24, 31, 0.1);
+    box-shadow:
+      inset 0.8mm 0 0 rgba(99, 24, 31, 0.13),
+      0 0.45mm 1.4mm rgba(31, 31, 31, 0.028);
   }
 
   .report-box + .report-box {
@@ -4425,8 +4427,8 @@ textarea:focus {
   .text-section .report-section-label {
     margin-bottom: 2.6mm;
     padding-bottom: 1mm;
-    border-bottom: 0.25mm solid rgba(75, 66, 66, 0.18);
-    color: #6f2026;
+    border-bottom: 0.25mm solid rgba(104, 45, 51, 0.26);
+    color: #742129;
     font-size: 10pt;
   }
 
@@ -4435,9 +4437,11 @@ textarea:focus {
     padding: 4.5mm 5mm 5mm 6mm;
     border-radius: 2mm;
     break-inside: avoid;
-    border-color: rgba(75, 66, 66, 0.16);
-    background: #fff;
-    box-shadow: inset 0.8mm 0 0 rgba(99, 24, 31, 0.1);
+    border-color: rgba(104, 45, 51, 0.22);
+    background:
+      linear-gradient(135deg, rgba(99, 24, 31, 0.02), transparent 34%),
+      #fff;
+    box-shadow: inset 0.8mm 0 0 rgba(99, 24, 31, 0.13);
   }
 
   .repair-process-head h3 {
@@ -4463,7 +4467,7 @@ textarea:focus {
     min-height: 13mm;
     padding: 2.4mm;
     border-radius: 1.4mm;
-    border-color: rgba(75, 66, 66, 0.14);
+    border-color: rgba(104, 45, 51, 0.18);
     background: #fff;
   }
 
@@ -4921,6 +4925,7 @@ textarea:focus {
     gap: 5mm;
     border-color: transparent;
     border-radius: 0;
+    background: #fff;
     break-after: page;
     box-shadow: none;
   }
@@ -4929,7 +4934,7 @@ textarea:focus {
     height: 4.5mm;
     margin: 0 -6mm 3mm;
     border-radius: 0;
-    background: linear-gradient(90deg, var(--brand-strong), var(--brand) 72%, rgba(139, 30, 36, 0.22));
+    background: linear-gradient(90deg, #6f151b, #872129 72%, rgba(111, 21, 27, 0.22));
   }
 
   .assessment-project-info {
@@ -4961,11 +4966,11 @@ textarea:focus {
     width: 9.5mm;
     height: 9.5mm;
     padding: 0;
-    filter: drop-shadow(0 0.8mm 1.6mm rgba(31, 31, 31, 0.13));
+    filter: drop-shadow(0 0.45mm 1mm rgba(31, 31, 31, 0.1));
   }
 
   .assessment-icon-bg {
-    fill: #7a2026;
+    fill: #7a2027;
     stroke: rgba(255, 255, 255, 0.78);
     stroke-width: 1.35;
   }
@@ -5050,7 +5055,7 @@ textarea:focus {
   }
 
   .radar-number-bg {
-    fill: #7a2026;
+    fill: #7a2027;
     stroke-width: 2.4;
   }
 
@@ -5062,16 +5067,16 @@ textarea:focus {
     gap: 1.2mm;
     min-height: 21mm;
     padding: 1.8mm 2.4mm;
-    border-color: rgba(75, 66, 66, 0.15);
+    border-color: rgba(104, 45, 51, 0.2);
     border-radius: 1.4mm;
-    background: rgba(255, 255, 255, 0.95);
-    box-shadow: 0 0.7mm 1.8mm rgba(31, 31, 31, 0.045);
+    background: #fff;
+    box-shadow: 0 0.45mm 1.25mm rgba(31, 31, 31, 0.05);
   }
 
   .assessment-scale-head {
     gap: 1.8mm;
     padding-bottom: 1.3mm;
-    border-bottom-color: rgba(99, 24, 31, 0.34);
+    border-bottom-color: rgba(104, 45, 51, 0.24);
   }
 
   .assessment-scale-title {
@@ -5085,8 +5090,8 @@ textarea:focus {
     border-width: 0.45mm;
     background:
       radial-gradient(circle at 34% 26%, rgba(255, 255, 255, 0.25), transparent 34%),
-      linear-gradient(145deg, #7d2026 0%, #5f2026 100%);
-    box-shadow: 0 0.6mm 1.2mm rgba(31, 31, 31, 0.13);
+      linear-gradient(145deg, #7a2027 0%, #5f2026 100%);
+    box-shadow: 0 0.4mm 0.95mm rgba(31, 31, 31, 0.13);
   }
 
   .assessment-scale em {
@@ -5112,16 +5117,16 @@ textarea:focus {
   .assessment-note-card {
     gap: 2.4mm;
     padding: 4.1mm 4.8mm;
-    border-color: rgba(75, 66, 66, 0.16);
+    border-color: rgba(104, 45, 51, 0.2);
     border-radius: 2mm;
-    background: rgba(255, 255, 255, 0.96);
+    background: #fff;
     min-height: 0;
   }
 
   .assessment-note-title {
     gap: 3mm;
     padding-bottom: 2.4mm;
-    border-bottom-color: rgba(99, 24, 31, 0.42);
+    border-bottom-color: rgba(104, 45, 51, 0.28);
   }
 
   .assessment-note-title .assessment-icon {
@@ -5130,7 +5135,7 @@ textarea:focus {
   }
 
   .assessment-note-title h3 {
-    color: #7a2026;
+    color: #742129;
     font-size: 19pt;
   }
 
@@ -5143,16 +5148,16 @@ textarea:focus {
     grid-template-columns: 10mm minmax(0, 1fr);
     gap: 3.5mm;
     padding: 3.2mm 5mm;
-    border-color: rgba(75, 66, 66, 0.16);
+    border-color: rgba(104, 45, 51, 0.2);
     border-radius: 2mm;
-    background: rgba(255, 255, 255, 0.94);
+    background: #fff;
   }
 
   .assessment-footer-icon {
     width: 10mm;
     height: 10mm;
-    border-color: #7a2026;
-    color: #7a2026;
+    border-color: #742129;
+    color: #742129;
     border-width: 1mm;
     font-size: 18pt;
   }
@@ -5163,20 +5168,20 @@ textarea:focus {
   }
 
   .attention-section .timeline-item {
-    background: #fff;
+    background: #fffdfc;
     border-radius: 1.6mm;
     padding: 3mm 5mm 3mm 4.5mm;
-    border: 0.25mm solid rgba(75, 66, 66, 0.14);
+    border: 0.25mm solid rgba(104, 45, 51, 0.2);
   }
 
   .closing {
     padding: 6mm 9mm;
-    border-color: rgba(75, 66, 66, 0.16);
+    border-color: rgba(104, 45, 51, 0.23);
     background:
-      linear-gradient(135deg, rgba(31, 31, 31, 0.016), transparent 36%),
+      linear-gradient(135deg, rgba(99, 24, 31, 0.022), transparent 36%),
       #fff;
     border-radius: 1.4mm;
-    box-shadow: none;
+    box-shadow: 0 0.45mm 1.4mm rgba(31, 31, 31, 0.026);
   }
 
   .timeline {
