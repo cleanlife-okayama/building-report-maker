@@ -1954,10 +1954,9 @@ textarea:focus {
   align-items: stretch;
   padding: 30px 34px;
   border: 1px solid #ead7d8;
-  border-radius: 8px;
+  border-radius: 0;
   background:
     linear-gradient(110deg, var(--brand) 0 72%, rgba(139, 30, 36, 0.18) 72% 100%) top / 100% 10px no-repeat,
-    linear-gradient(90deg, rgba(139, 30, 36, 0.12) 0 8px, transparent 8px),
     linear-gradient(135deg, rgba(139, 30, 36, 0.08), transparent 42%),
     linear-gradient(180deg, #fff 0%, #fbf7f4 100%);
   break-inside: avoid;
@@ -4121,12 +4120,12 @@ textarea:focus {
     align-content: space-between;
     min-height: 252mm;
     padding: 8mm;
-    border-color: rgba(99, 24, 31, 0.18);
-    border-radius: 2mm;
+    border-color: transparent;
+    border-radius: 0;
     background:
-      linear-gradient(110deg, var(--brand) 0 72%, rgba(139, 30, 36, 0.18) 72% 100%) top / 100% 2.2mm no-repeat,
-      linear-gradient(90deg, rgba(139, 30, 36, 0.12) 0 2mm, transparent 2mm),
+      linear-gradient(90deg, var(--brand-strong), var(--brand) 72%, rgba(139, 30, 36, 0.22)) top / 100% 2.2mm no-repeat,
       #fff;
+    box-shadow: 0 1.2mm 3mm rgba(31, 31, 31, 0.035);
     break-after: page;
   }
 
@@ -4159,6 +4158,8 @@ textarea:focus {
   .cover-work-title {
     margin: 2.4mm 0 1.8mm;
     padding-bottom: 2.8mm;
+    border-bottom-color: rgba(99, 24, 31, 0.28);
+    color: #1f1f1f;
     font-size: 25pt;
     line-height: 1.15;
   }
@@ -4205,8 +4206,14 @@ textarea:focus {
     grid-area: concern;
     margin-top: 0;
     padding: 3.2mm 3.6mm;
-    border-radius: 3mm;
-    box-shadow: none;
+    border-color: rgba(99, 24, 31, 0.18);
+    border-radius: 1.4mm;
+    background:
+      linear-gradient(135deg, rgba(99, 24, 31, 0.045), transparent 44%),
+      #fff;
+    box-shadow:
+      inset 0.8mm 0 0 rgba(99, 24, 31, 0.12),
+      0 1.1mm 2.8mm rgba(31, 31, 31, 0.08);
   }
 
   .cover-concern-label {
@@ -4224,11 +4231,20 @@ textarea:focus {
     gap: 0;
     align-self: stretch;
     overflow: hidden !important;
-    border-radius: 3.2mm;
+    border-color: rgba(99, 24, 31, 0.18);
+    border-radius: 1.4mm;
+    background:
+      linear-gradient(180deg, #fff 0%, #fffdfc 100%);
+    box-shadow:
+      inset 0 0 0 0.2mm rgba(99, 24, 31, 0.05),
+      0 1.2mm 3.2mm rgba(31, 31, 31, 0.075);
   }
 
   .cover-info::before {
     padding: 2.8mm 3.4mm 2mm;
+    border-bottom-color: rgba(99, 24, 31, 0.14);
+    background: #fbfaf9;
+    color: var(--brand-strong);
     font-size: 8.5pt;
   }
 
@@ -4249,8 +4265,9 @@ textarea:focus {
   .cover-info > div {
     padding: 2.5mm 3.2mm 2.5mm 10mm;
     min-height: auto;
-    border-right: 1px solid rgba(139, 30, 36, 0.1);
-    border-bottom: 1px solid rgba(139, 30, 36, 0.1);
+    border-right: 1px solid rgba(99, 24, 31, 0.1);
+    border-bottom: 1px solid rgba(99, 24, 31, 0.1);
+    background: rgba(255, 255, 255, 0.72);
   }
 
   .cover-info > div::before {
@@ -4259,7 +4276,7 @@ textarea:focus {
     width: 5.2mm;
     height: 5.2mm;
     font-size: 7pt;
-    box-shadow: none;
+    box-shadow: 0 0.7mm 1.5mm rgba(99, 24, 31, 0.18);
   }
 
   .cover-info span {
@@ -4297,7 +4314,12 @@ textarea:focus {
 
   .cover-photo {
     margin-top: 0.5mm;
-    border-radius: 5mm;
+    border-color: rgba(99, 24, 31, 0.22);
+    border-radius: 1.4mm;
+    background: #f5f1ef;
+    box-shadow:
+      0 2.2mm 5.4mm rgba(31, 31, 31, 0.18),
+      0 0.7mm 1.6mm rgba(99, 24, 31, 0.12);
     overflow: hidden !important;
     position: relative;
     z-index: 1;
@@ -4383,7 +4405,7 @@ textarea:focus {
     box-shadow: none;
     break-inside: avoid;
     border-color: rgba(139, 30, 36, 0.18);
-    border-radius: 2mm;
+    border-radius: 1.4mm;
     background:
       linear-gradient(135deg, rgba(139, 30, 36, 0.035), transparent 36%),
       linear-gradient(180deg, #fff 0%, #fffdfb 100%);
@@ -4411,7 +4433,7 @@ textarea:focus {
   .repair-process-card {
     margin-top: 4mm;
     padding: 4.5mm 5mm 5mm 6mm;
-    border-radius: 3mm;
+    border-radius: 2mm;
     break-inside: avoid;
     box-shadow: inset 1.2mm 0 0 rgba(139, 30, 36, 0.2);
   }
@@ -4438,7 +4460,7 @@ textarea:focus {
     gap: 2mm;
     min-height: 13mm;
     padding: 2.4mm;
-    border-radius: 2mm;
+    border-radius: 1.4mm;
   }
 
   .repair-step b {
@@ -4565,7 +4587,7 @@ textarea:focus {
   .related-photo-digest {
     gap: 2mm;
     padding: 2.7mm;
-    border-radius: 3mm;
+    border-radius: 2mm;
     box-shadow: none;
     page-break-inside: avoid;
     break-inside: avoid;
@@ -4595,7 +4617,7 @@ textarea:focus {
 
   .related-photo-digest-tile,
   .related-photo-digest-more {
-    border-radius: 2.4mm;
+    border-radius: 1.8mm;
   }
 
   .related-photo-digest-tile .annotated-photo-image,
@@ -4603,7 +4625,7 @@ textarea:focus {
   .related-photo-digest-missing {
     height: 22mm;
     min-height: 22mm;
-    border-radius: 2mm 2mm 0 0;
+    border-radius: 1.4mm 1.4mm 0 0;
   }
 
   .related-photo-digest-tile figcaption {
@@ -4686,7 +4708,7 @@ textarea:focus {
     padding: 4mm 5mm;
     border: 0.25mm solid rgba(139, 30, 36, 0.2);
     border-left: 1.4mm solid rgba(139, 30, 36, 0.72);
-    border-radius: 3mm;
+    border-radius: 2mm;
     background:
       linear-gradient(135deg, rgba(139, 30, 36, 0.1), rgba(139, 30, 36, 0.02)),
       #fff;
@@ -4739,7 +4761,7 @@ textarea:focus {
     box-shadow:
       0 1.1mm 2.8mm rgba(31, 31, 31, 0.055),
       0 0.3mm 1mm rgba(139, 30, 36, 0.04);
-    border-radius: 3mm;
+    border-radius: 2mm;
   }
 
   .grouped-photo-report-grid {
@@ -4782,7 +4804,7 @@ textarea:focus {
   .photo-report img {
     height: 70mm;
     aspect-ratio: auto;
-    border-radius: 2mm 2mm 0 0;
+    border-radius: 1.4mm 1.4mm 0 0;
   }
 
   .photo-report > .annotated-photo-image {
@@ -4793,7 +4815,7 @@ textarea:focus {
     height: 70mm;
     min-height: 70mm;
     max-height: 70mm;
-    border-radius: 2mm 2mm 0 0;
+    border-radius: 1.4mm 1.4mm 0 0;
     overflow: hidden !important;
   }
 
@@ -4893,20 +4915,22 @@ textarea:focus {
     grid-template-rows: auto auto minmax(0, 1fr) auto;
     padding: 0 6mm 7.5mm;
     gap: 5mm;
+    border-color: transparent;
     border-radius: 0;
     break-after: page;
-    box-shadow: inset 0 -5mm 0 var(--brand);
+    box-shadow: none;
   }
 
   .assessment-topline {
     height: 4.5mm;
     margin: 0 -6mm 3mm;
     border-radius: 0;
+    background: linear-gradient(90deg, var(--brand-strong), var(--brand) 72%, rgba(139, 30, 36, 0.22));
   }
 
   .assessment-project-info {
     padding: 2.7mm 4.6mm;
-    border-radius: 3mm;
+    border-radius: 2mm;
   }
 
   .assessment-info-column {
@@ -5031,7 +5055,7 @@ textarea:focus {
     gap: 1.2mm;
     min-height: 21mm;
     padding: 1.8mm 2.4mm;
-    border-radius: 2mm;
+    border-radius: 1.4mm;
     box-shadow: 0 1.5mm 3mm rgba(111, 20, 25, 0.06);
   }
 
@@ -5076,7 +5100,7 @@ textarea:focus {
   .assessment-note-card {
     gap: 2.4mm;
     padding: 4.1mm 4.8mm;
-    border-radius: 3mm;
+    border-radius: 2mm;
     min-height: 0;
   }
 
@@ -5103,7 +5127,7 @@ textarea:focus {
     grid-template-columns: 10mm minmax(0, 1fr);
     gap: 3.5mm;
     padding: 3.2mm 5mm;
-    border-radius: 3mm;
+    border-radius: 2mm;
   }
 
   .assessment-footer-icon {
@@ -5120,14 +5144,14 @@ textarea:focus {
 
   .attention-section .timeline-item {
     background: #fff7f7;
-    border-radius: 8px;
+    border-radius: 1.6mm;
     padding: 3mm 5mm 3mm 4.5mm;
     border: 0.25mm solid rgba(139, 30, 36, 0.12);
   }
 
   .closing {
     padding: 6mm 9mm;
-    border-radius: 2mm;
+    border-radius: 1.4mm;
     box-shadow: none;
   }
 
@@ -5174,8 +5198,9 @@ textarea:focus {
   .company-profile-card {
     overflow: hidden !important;
     padding: 10mm;
-    border-radius: 3mm;
-    box-shadow: inset 1.2mm 0 0 rgba(139, 30, 36, 0.22);
+    border-color: transparent;
+    border-radius: 0;
+    box-shadow: 0 1.4mm 3.4mm rgba(31, 31, 31, 0.06);
   }
 
   .company-profile-card::before {
@@ -5232,7 +5257,7 @@ textarea:focus {
   .company-profile-logo {
     min-height: 24mm;
     padding: 2.5mm;
-    border-radius: 2.5mm;
+    border-radius: 1.8mm;
   }
 
   .company-profile-logo img {
@@ -5258,7 +5283,7 @@ textarea:focus {
     align-self: start;
     gap: 3.4mm;
     padding: 4.5mm;
-    border-radius: 2.5mm;
+    border-radius: 1.8mm;
   }
 
   .company-trust-kicker {
@@ -5303,7 +5328,7 @@ textarea:focus {
     width: 34mm;
     height: 34mm;
     padding: 1.8mm;
-    border-radius: 1.6mm;
+    border-radius: 1.2mm;
   }
 
   .company-trust-link span {
@@ -5321,7 +5346,7 @@ textarea:focus {
     align-self: start;
     margin-top: 0;
     overflow: hidden !important;
-    border-radius: 2.5mm;
+    border-radius: 1.8mm;
   }
 
   .company-profile-main .company-profile-details {
