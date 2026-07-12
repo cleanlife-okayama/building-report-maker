@@ -4066,6 +4066,7 @@ textarea:focus {
   .report-page {
     min-height: auto;
     padding: 0;
+    background: #fff;
     font-size: 11pt;
     line-height: 1.8;
   }
@@ -4120,6 +4121,12 @@ textarea:focus {
     align-content: space-between;
     min-height: 252mm;
     padding: 8mm;
+    border-color: rgba(99, 24, 31, 0.18);
+    border-radius: 2mm;
+    background:
+      linear-gradient(110deg, var(--brand) 0 72%, rgba(139, 30, 36, 0.18) 72% 100%) top / 100% 2.2mm no-repeat,
+      linear-gradient(90deg, rgba(139, 30, 36, 0.12) 0 2mm, transparent 2mm),
+      #fff;
     break-after: page;
   }
 
@@ -4372,11 +4379,11 @@ textarea:focus {
   }
 
   .report-box {
-    padding: 5mm 6mm 5.4mm 7mm;
+    padding: 5mm 9mm 5.4mm 10mm;
     box-shadow: none;
     break-inside: avoid;
     border-color: rgba(139, 30, 36, 0.18);
-    border-radius: 3mm;
+    border-radius: 2mm;
     background:
       linear-gradient(135deg, rgba(139, 30, 36, 0.035), transparent 36%),
       linear-gradient(180deg, #fff 0%, #fffdfb 100%);
@@ -4749,6 +4756,7 @@ textarea:focus {
     min-height: 145mm;
     margin-top: 0;
     border-color: rgba(139, 30, 36, 0.48);
+    background: #fff;
     box-shadow:
       0 1.7mm 3.8mm rgba(31, 31, 31, 0.07),
       0 0.5mm 1.4mm rgba(139, 30, 36, 0.09);
@@ -5113,12 +5121,13 @@ textarea:focus {
   .attention-section .timeline-item {
     background: #fff7f7;
     border-radius: 8px;
-    padding: 2mm;
+    padding: 3mm 5mm 3mm 4.5mm;
     border: 0.25mm solid rgba(139, 30, 36, 0.12);
   }
 
   .closing {
-    border-radius: 3mm;
+    padding: 6mm 9mm;
+    border-radius: 2mm;
     box-shadow: none;
   }
 
