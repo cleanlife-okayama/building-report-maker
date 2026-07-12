@@ -4404,12 +4404,12 @@ textarea:focus {
     padding: 5mm 9mm 5.4mm 10mm;
     box-shadow: none;
     break-inside: avoid;
-    border-color: rgba(139, 30, 36, 0.18);
+    border-color: rgba(75, 66, 66, 0.16);
     border-radius: 1.4mm;
     background:
-      linear-gradient(135deg, rgba(139, 30, 36, 0.035), transparent 36%),
-      linear-gradient(180deg, #fff 0%, #fffdfb 100%);
-    box-shadow: inset 1.2mm 0 0 rgba(139, 30, 36, 0.18);
+      linear-gradient(135deg, rgba(31, 31, 31, 0.018), transparent 36%),
+      linear-gradient(180deg, #fff 0%, #fdfcfa 100%);
+    box-shadow: inset 0.8mm 0 0 rgba(99, 24, 31, 0.1);
   }
 
   .report-box + .report-box {
@@ -4425,8 +4425,8 @@ textarea:focus {
   .text-section .report-section-label {
     margin-bottom: 2.6mm;
     padding-bottom: 1mm;
-    border-bottom: 0.25mm solid rgba(139, 30, 36, 0.28);
-    color: var(--brand);
+    border-bottom: 0.25mm solid rgba(75, 66, 66, 0.18);
+    color: #6f2026;
     font-size: 10pt;
   }
 
@@ -4435,7 +4435,9 @@ textarea:focus {
     padding: 4.5mm 5mm 5mm 6mm;
     border-radius: 2mm;
     break-inside: avoid;
-    box-shadow: inset 1.2mm 0 0 rgba(139, 30, 36, 0.2);
+    border-color: rgba(75, 66, 66, 0.16);
+    background: #fff;
+    box-shadow: inset 0.8mm 0 0 rgba(99, 24, 31, 0.1);
   }
 
   .repair-process-head h3 {
@@ -4461,6 +4463,8 @@ textarea:focus {
     min-height: 13mm;
     padding: 2.4mm;
     border-radius: 1.4mm;
+    border-color: rgba(75, 66, 66, 0.14);
+    background: #fff;
   }
 
   .repair-step b {
@@ -4957,10 +4961,12 @@ textarea:focus {
     width: 9.5mm;
     height: 9.5mm;
     padding: 0;
-    filter: drop-shadow(0 1.3mm 2.5mm rgba(111, 20, 25, 0.2));
+    filter: drop-shadow(0 0.8mm 1.6mm rgba(31, 31, 31, 0.13));
   }
 
   .assessment-icon-bg {
+    fill: #7a2026;
+    stroke: rgba(255, 255, 255, 0.78);
     stroke-width: 1.35;
   }
 
@@ -5044,6 +5050,7 @@ textarea:focus {
   }
 
   .radar-number-bg {
+    fill: #7a2026;
     stroke-width: 2.4;
   }
 
@@ -5055,14 +5062,16 @@ textarea:focus {
     gap: 1.2mm;
     min-height: 21mm;
     padding: 1.8mm 2.4mm;
+    border-color: rgba(75, 66, 66, 0.15);
     border-radius: 1.4mm;
-    box-shadow: 0 1.5mm 3mm rgba(111, 20, 25, 0.06);
+    background: rgba(255, 255, 255, 0.95);
+    box-shadow: 0 0.7mm 1.8mm rgba(31, 31, 31, 0.045);
   }
 
   .assessment-scale-head {
     gap: 1.8mm;
     padding-bottom: 1.3mm;
-    border-bottom-color: rgba(139, 30, 36, 0.52);
+    border-bottom-color: rgba(99, 24, 31, 0.34);
   }
 
   .assessment-scale-title {
@@ -5074,7 +5083,10 @@ textarea:focus {
     height: 6.1mm;
     font-size: 9.8pt;
     border-width: 0.45mm;
-    box-shadow: 0 1mm 1.8mm rgba(111, 20, 25, 0.22);
+    background:
+      radial-gradient(circle at 34% 26%, rgba(255, 255, 255, 0.25), transparent 34%),
+      linear-gradient(145deg, #7d2026 0%, #5f2026 100%);
+    box-shadow: 0 0.6mm 1.2mm rgba(31, 31, 31, 0.13);
   }
 
   .assessment-scale em {
@@ -5100,13 +5112,16 @@ textarea:focus {
   .assessment-note-card {
     gap: 2.4mm;
     padding: 4.1mm 4.8mm;
+    border-color: rgba(75, 66, 66, 0.16);
     border-radius: 2mm;
+    background: rgba(255, 255, 255, 0.96);
     min-height: 0;
   }
 
   .assessment-note-title {
     gap: 3mm;
     padding-bottom: 2.4mm;
+    border-bottom-color: rgba(99, 24, 31, 0.42);
   }
 
   .assessment-note-title .assessment-icon {
@@ -5115,6 +5130,7 @@ textarea:focus {
   }
 
   .assessment-note-title h3 {
+    color: #7a2026;
     font-size: 19pt;
   }
 
@@ -5127,12 +5143,16 @@ textarea:focus {
     grid-template-columns: 10mm minmax(0, 1fr);
     gap: 3.5mm;
     padding: 3.2mm 5mm;
+    border-color: rgba(75, 66, 66, 0.16);
     border-radius: 2mm;
+    background: rgba(255, 255, 255, 0.94);
   }
 
   .assessment-footer-icon {
     width: 10mm;
     height: 10mm;
+    border-color: #7a2026;
+    color: #7a2026;
     border-width: 1mm;
     font-size: 18pt;
   }
@@ -5143,14 +5163,18 @@ textarea:focus {
   }
 
   .attention-section .timeline-item {
-    background: #fff7f7;
+    background: #fff;
     border-radius: 1.6mm;
     padding: 3mm 5mm 3mm 4.5mm;
-    border: 0.25mm solid rgba(139, 30, 36, 0.12);
+    border: 0.25mm solid rgba(75, 66, 66, 0.14);
   }
 
   .closing {
     padding: 6mm 9mm;
+    border-color: rgba(75, 66, 66, 0.16);
+    background:
+      linear-gradient(135deg, rgba(31, 31, 31, 0.016), transparent 36%),
+      #fff;
     border-radius: 1.4mm;
     box-shadow: none;
   }
