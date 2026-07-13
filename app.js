@@ -45,8 +45,9 @@
   ];
 
   const areaOptions = ["外壁", "屋根", "シーリング（目地の防水材）", "ベランダ防水", "雨樋", "窓まわり", "基礎", "付帯部（雨樋・破風など）", "その他"];
-  const conditionOptions = ["問題なし", "要確認", "軽微な劣化", "経年劣化が見られる", "劣化・不具合が見られる", "使用上の支障あり", "安全面の確認が必要"];
-  const photoPriorityConditions = ["使用上の支障あり", "安全面の確認が必要"];
+  const findingConditionOptions = ["問題なし", "要確認", "軽微な劣化", "経年劣化が見られる", "劣化・不具合が見られる", "使用上の支障あり", "安全面の確認が必要"];
+  const photoConditionOptions = ["目立った問題なし", "今後の経過確認が必要", "詳しい確認が必要", "劣化の兆候あり", "劣化が進行している", "不具合を確認", "早めの対応が必要", "直ちに対応が必要"];
+  const photoPriorityConditions = ["早めの対応が必要", "直ちに対応が必要"];
   const PHOTO_PRIORITY_REPORT_TITLE = "特に確認しておきたい写真";
   const PHOTO_PRIORITY_REPORT_NOTE = "この箇所は、補修方針を考えるうえで優先して確認したい写真です。";
   const FINDING_PHOTO_REPORT_SECTION_TITLE = "1. 調査写真・確認項目ごとの確認結果";
@@ -765,7 +766,7 @@
       ]),
       el("div", { className: "finding-card-body" }, [
         el("div", { className: "form-grid" }, [
-          selectField("状態", finding.condition, conditionOptions, (v) => patchFinding(finding.id, "condition", v)),
+          selectField("状態", finding.condition, findingConditionOptions, (v) => patchFinding(finding.id, "condition", v)),
           selectField("対応の目安", finding.priority, priorities.map((item) => item.value), (v) => patchFinding(finding.id, "priority", v), priorityLabel),
           textareaField("確認した内容", finding.observation, (v) => patchFinding(finding.id, "observation", v), "full", undefined, textLimit("findingObservation")),
           textareaField("考えられること・注意点", finding.concern, (v) => patchFinding(finding.id, "concern", v), "full", undefined, textLimit("findingConcern")),
@@ -975,7 +976,7 @@
             inputField("撮影箇所", photo.area, (v) => patchPhoto(photo.id, "area", v), "", "text", "例：西面外壁／キッチン流し台／リビング天井", textLimit("photoAreaOther")),
             el("div", { className: "field photo-condition-field" }, [
               el("label", { text: "調査結果・判断" }),
-              selectInlineWithOther(photo.condition || "", conditionOptions, (v) => patchPhoto(photo.id, "condition", v), photoConditionOptionLabel, textLimit("photoConditionOther")),
+              selectInlineWithOther(photo.condition || "", photoConditionOptions, (v) => patchPhoto(photo.id, "condition", v), photoConditionOptionLabel, textLimit("photoConditionOther")),
               el("span", {
                 className: "field-hint photo-priority-hint",
                 text: "「PDF重点表示」の項目を選ぶと、印刷/PDFでは「特に確認しておきたい写真」として1枚で大きめに表示されます。",
@@ -5655,7 +5656,7 @@
       ...state.photos.flatMap((photo, index) => [
         pdfTextField("photoTitle", photo.title, `写真${index + 1}`),
         pdfTextField("photoAreaOther", photo.area, `写真${index + 1}`),
-        isOtherValue(photo.condition, conditionOptions)
+        isOtherValue(photo.condition, photoConditionOptions)
           ? pdfTextField("photoConditionOther", photo.condition, `写真${index + 1}`)
           : null,
         pdfTextField("photoFinding", photo.finding || photo.memo || "", `写真${index + 1}`),
@@ -6271,7 +6272,7 @@
     target.findings.forEach((finding) => {
       finding.priority = normalizePriority(finding.priority);
       finding.area = normalizeOptionText(finding.area);
-      finding.condition = normalizeConditionText(finding.condition);
+      finding.condition = normalizeFindingConditionText(finding.condition);
     });
     const validFindingIds = new Set(target.findings.map((finding) => finding.id).filter(Boolean));
     target.photos.forEach((photo) => {
@@ -6282,7 +6283,7 @@
       if (!photo.finding && photo.memo) photo.finding = photo.memo;
       if (!photo.recommendation) photo.recommendation = "";
       photo.area = normalizeOptionText(photo.area);
-      photo.condition = normalizeConditionText(photo.condition);
+      photo.condition = normalizePhotoConditionText(photo.condition);
       photo.annotations = normalizeAnnotations(photo.annotations);
     });
     target.project.buildingType = normalizeOptionText(target.project.buildingType);
@@ -6373,7 +6374,7 @@
     return map[value] || value;
   }
 
-  function normalizeConditionText(value) {
+  function normalizeFindingConditionText(value) {
     const normalized = normalizeOptionText(value);
     const map = {
       "軽い傷み": "軽微な劣化",
@@ -6383,6 +6384,28 @@
       "補修推奨": "劣化・不具合が見られる",
       "早期対応推奨": "安全面の確認が必要",
       "良好": "問題なし",
+      "写真だけでは判断しにくい": "",
+      "写真では判断しにくい": "",
+    };
+    return map[normalized] ?? normalized;
+  }
+
+  function normalizePhotoConditionText(value) {
+    const normalized = normalizeOptionText(value);
+    const map = {
+      "問題なし": "目立った問題なし",
+      "要確認": "詳しい確認が必要",
+      "軽微な劣化": "劣化の兆候あり",
+      "軽い傷み": "劣化の兆候あり",
+      "経年劣化が見られる": "劣化が進行している",
+      "劣化・不具合が見られる": "不具合を確認",
+      "傷みあり": "不具合を確認",
+      "劣化あり": "不具合を確認",
+      "補修推奨": "不具合を確認",
+      "使用上の支障あり": "早めの対応が必要",
+      "安全面の確認が必要": "直ちに対応が必要",
+      "早期対応推奨": "直ちに対応が必要",
+      "良好": "目立った問題なし",
       "写真だけでは判断しにくい": "",
       "写真では判断しにくい": "",
     };
