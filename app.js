@@ -128,7 +128,7 @@
     "この画像の内容をもとに、必ず下記5項目だけで回答してください。\n" +
     "【写真タイトル】\n" +
     "【撮影箇所】\n" +
-    "【調査結果の目安】\n" +
+    "【調査結果・判断】\n" +
     "【現在の状態】\n" +
     "【この箇所の対応目安】\n\n" +
     "このAI回答は、写真から新しく診断を確定するものではありません。\n" +
@@ -136,7 +136,7 @@
     "文字数目安：\n" +
     "・写真タイトル：25文字程度\n" +
     "・撮影箇所：20文字程度\n" +
-    "・調査結果の目安：20文字程度\n" +
+    "・調査結果・判断：20文字程度\n" +
     "・現在の状態：90〜110文字程度、長くても120文字以内\n" +
     "・この箇所の対応目安：90〜110文字程度、長くても120文字以内\n\n" +
     "写真タイトルの考え方：\n" +
@@ -161,9 +161,9 @@
     "これはアプリ機能の一つです。作成したコメントは、建物調査報告書メーカーの各入力欄へコピーして使用します。前置きや補足説明はできるだけ省き、そのまま貼り付けやすい形で回答してください。\n\n" +
     "この画像を読み取ったAIは、まずこのプロンプトに従ってください。下の写真と入力内容を確認し、建物調査報告書に載せるコメント案を作成してください。\n\n" +
     "入力済み・空欄を問わず、写真と入力内容から分かる範囲で、次の全項目を整えてください。\n" +
-    "・写真タイトル\n・撮影箇所\n・調査結果の目安\n・現在の状態\n・この箇所の対応目安\n\n" +
+    "・写真タイトル\n・撮影箇所\n・調査結果・判断\n・現在の状態\n・この箇所の対応目安\n\n" +
     "回答は必ず次の見出しごとに分け、すべての項目を省略せず回答してください。\n" +
-    "【写真タイトル】\n【撮影箇所】\n【調査結果の目安】\n【現在の状態】\n【この箇所の対応目安】\n\n" +
+    "【写真タイトル】\n【撮影箇所】\n【調査結果・判断】\n【現在の状態】\n【この箇所の対応目安】\n\n" +
     "見出し名は変更せず、この5つ以外の見出しは回答に含めないでください。\n\n" +
     "空欄があっても「未入力です」で止めず、写真と入力内容から分かる範囲で全項目の案を作成してください。入力済みの内容も省略せず、必要に応じて分かりやすく整えてください。\n\n" +
     "一般のお客様にも伝わる、やさしく自然な説明文にしてください。写真で見える状態と、追加確認が必要なことを分けて書いてください。写真だけで断定できない原因、内部状態、将来必ず起こる被害は断定しないでください。断定できない部分だけ「可能性があります」「確認が必要です」などにし、確認できる事実まで弱めすぎないでください。\n\n" +
@@ -172,7 +172,7 @@
     "\n\n各項目は、報告書のPDF・印刷時にレイアウトが崩れないよう、次の文字数を目安に整えてください。\n" +
     "【写真タイトル】25字程度\n" +
     "【撮影箇所】20字程度\n" +
-    "【調査結果の目安】20字以内\n" +
+    "【調査結果・判断】20字以内\n" +
     "【現在の状態】90〜110字程度、長くても120字以内\n" +
     "【この箇所の対応目安】90〜110字程度、長くても120字以内\n\n" +
     "各欄の文字数目安内で、必要な説明は省略しすぎず、お客様が納得して判断できる文章にしてください。短くまとめることよりも、分かりやすく伝わることを優先してください。無理に文字数を増やさず、理由・背景・不安への配慮・対応する意味が自然に伝わる文章を優先してください。短い例を入れた方が伝わりやすい場合は、自然な範囲で入れてください。ただし、入力内容にない原因・工事内容・効果・危険性を断定して追加しないでください。";
@@ -196,7 +196,7 @@
     findingProposal: { label: "対応の考え方", maxLength: 260, warningRatio: 0.85 },
     photoTitle: { label: "写真タイトル", maxLength: 25, warningRatio: 0.85 },
     photoAreaOther: { label: "撮影箇所の自由入力", maxLength: 20, warningRatio: 0.85 },
-    photoConditionOther: { label: "調査結果の目安の自由入力", maxLength: 20, warningRatio: 0.85 },
+    photoConditionOther: { label: "調査結果・判断の自由入力", maxLength: 20, warningRatio: 0.85 },
     photoFinding: { label: "現在の状態", maxLength: 120, warningRatio: 0.85 },
     photoRecommendation: { label: "この箇所の対応目安", maxLength: 120, warningRatio: 0.85 },
     proposalPlanName: { label: "ご提案内容", maxLength: 60, warningRatio: 0.85 },
@@ -974,7 +974,7 @@
             photoFindingField(photo),
             inputField("撮影箇所", photo.area, (v) => patchPhoto(photo.id, "area", v), "", "text", "例：西面外壁／キッチン流し台／リビング天井", textLimit("photoAreaOther")),
             el("div", { className: "field photo-condition-field" }, [
-              el("label", { text: "調査結果の目安" }),
+              el("label", { text: "調査結果・判断" }),
               selectInlineWithOther(photo.condition || "", conditionOptions, (v) => patchPhoto(photo.id, "condition", v), photoConditionOptionLabel, textLimit("photoConditionOther")),
               el("span", {
                 className: "field-hint photo-priority-hint",
@@ -2299,7 +2299,7 @@
         el("strong", { text: photo.title || photo.area || "現場写真" }),
         el("dl", { className: "photo-detail-list" }, [
           photo.area ? detailItem("撮影箇所", photo.area) : "",
-          photo.condition ? detailItem("調査結果の目安", photo.condition) : "",
+          photo.condition ? detailItem("調査結果・判断", photo.condition) : "",
           photo.finding || photo.memo ? detailItem("現在の状態", photo.finding || photo.memo) : "",
           photo.recommendation ? detailItem("この箇所の対応目安", photo.recommendation) : "",
         ]),
@@ -2642,8 +2642,8 @@
       const findingText = photo.finding || photo.memo || "";
       requireValue(photo.title, "調査写真", `${prefix}：写真タイトル`);
       requireValue(photo.area, "調査写真", `${prefix}：撮影箇所`);
-      if (!requireOtherValue(photo.condition, "調査写真", `${prefix}：調査結果の目安`)) {
-        requireValue(photo.condition, "調査写真", `${prefix}：調査結果の目安`);
+      if (!requireOtherValue(photo.condition, "調査写真", `${prefix}：調査結果・判断`)) {
+        requireValue(photo.condition, "調査写真", `${prefix}：調査結果・判断`);
       }
       requireValue(findingText, "調査写真", `${prefix}：現在の状態`);
       requireValue(photo.recommendation, "調査写真", `${prefix}：この箇所の対応目安`);
@@ -3458,7 +3458,7 @@
       photo: [
         "写真タイトル",
         "撮影箇所",
-        "調査結果の目安",
+        "調査結果・判断",
         "現在の状態",
         "この箇所の対応目安",
       ],
@@ -3506,7 +3506,7 @@
       if (!photo) return entries;
       addAiReplyField(entries, sections, ["写真タイトル"], "写真タイトル", photo.title, (value) => { photo.title = value; });
       addAiReplyField(entries, sections, ["撮影箇所"], "撮影箇所", photo.area, (value) => { photo.area = value; });
-      addAiReplyField(entries, sections, ["調査結果の目安"], "調査結果の目安", photo.condition, (value) => { photo.condition = value; });
+      addAiReplyField(entries, sections, ["調査結果・判断", "調査結果の目安"], "調査結果・判断", photo.condition, (value) => { photo.condition = value; });
       addAiReplyField(entries, sections, ["現在の状態"], "現在の状態", photo.finding || photo.memo, (value) => { photo.finding = value; });
       addAiReplyField(entries, sections, ["この箇所の対応目安"], "この箇所の対応目安", photo.recommendation, (value) => { photo.recommendation = value; });
     } else if (targetType === "finding") {
@@ -3877,7 +3877,7 @@
     infoY += 32;
     drawAiConsultationField(
       ctx,
-      "調査結果の目安",
+      "調査結果・判断",
       aiConsultationValue(photo.condition),
       infoRect.x + 34,
       infoY,
@@ -4172,7 +4172,7 @@
       "\n\n【参考情報】\n" +
       `所属する確認項目：${photoFindingName(photo)}\n` +
       "この情報は写真の文脈を理解するための参考です。回答欄としては追加せず、回答見出しは従来通り次の5項目だけにしてください。\n" +
-      "【写真タイトル】\n【撮影箇所】\n【調査結果の目安】\n【現在の状態】\n【この箇所の対応目安】"
+      "【写真タイトル】\n【撮影箇所】\n【調査結果・判断】\n【現在の状態】\n【この箇所の対応目安】"
     );
   }
 
@@ -4183,7 +4183,7 @@
       `【所属する確認項目】\n${photoFindingName(photo)}\n\n` +
       `【写真タイトル】\n${safeText(photo.title).trim() || "未入力"}\n\n` +
       `【撮影箇所】\n${aiConsultationValue(photo.area) || "未入力"}\n\n` +
-      `【調査結果の目安】\n${aiConsultationValue(photo.condition) || "未入力"}\n\n` +
+      `【調査結果・判断】\n${aiConsultationValue(photo.condition) || "未入力"}\n\n` +
       `【現在の状態】\n${safeText(photo.finding || photo.memo).trim() || "未入力"}\n\n` +
       `【この箇所の対応目安】\n${safeText(photo.recommendation).trim() || "未入力"}`
     );
@@ -4218,7 +4218,7 @@
         `関連写真${index + 1}`,
         `写真タイトル：${valueOrBlank(photo.title)}`,
         `撮影箇所：${valueOrBlank(aiConsultationValue(photo.area))}`,
-        `調査結果の目安：${valueOrBlank(aiConsultationValue(photo.condition))}`,
+        `調査結果・判断：${valueOrBlank(aiConsultationValue(photo.condition))}`,
         `現在の状態：${valueOrBlank(photo.finding || photo.memo)}`,
         `この箇所の対応目安：${valueOrBlank(photo.recommendation)}`,
       ].join("\n");
@@ -4267,7 +4267,7 @@
           `関連写真${photoIndex + 1}`,
           `写真タイトル：${valueOrBlank(photo.title)}`,
           `撮影箇所：${valueOrBlank(aiConsultationValue(photo.area))}`,
-          `調査結果の目安：${valueOrBlank(aiConsultationValue(photo.condition))}`,
+          `調査結果・判断：${valueOrBlank(aiConsultationValue(photo.condition))}`,
           `現在の状態：${valueOrBlank(photo.finding || photo.memo)}`,
           `この箇所の対応目安：${valueOrBlank(photo.recommendation)}`,
         ].join("\n");
@@ -4600,7 +4600,7 @@
           `関連写真${photoIndex + 1}`,
           `写真タイトル：${valueOrBlank(photo.title)}`,
           `撮影箇所：${valueOrBlank(aiConsultationValue(photo.area))}`,
-          `調査結果の目安：${valueOrBlank(aiConsultationValue(photo.condition))}`,
+          `調査結果・判断：${valueOrBlank(aiConsultationValue(photo.condition))}`,
           `現在の状態：${valueOrBlank(photo.finding || photo.memo)}`,
           `この箇所の対応目安：${valueOrBlank(photo.recommendation)}`,
         ].join("\n");
