@@ -34,18 +34,18 @@
   const today = new Date().toISOString().slice(0, 10);
   const OTHER_VALUE = "__other";
   const priorities = [
-    { value: "low", label: "経過観察", short: "経過観察" },
-    { value: "medium", label: "状態確認", short: "状態確認" },
-    { value: "cleaning", label: "清掃・調整", short: "清掃・調整" },
-    { value: "repair", label: "補修を検討", short: "補修を検討" },
-    { value: "replace", label: "交換を検討", short: "交換を検討" },
-    { value: "high", label: "早めに対応", short: "早めに対応" },
-    { value: "urgent_review", label: "早急な対応を検討", short: "早急な対応を検討" },
-    { value: "urgent", label: "優先して対応", short: "優先して対応" },
+    { value: "none", label: "現時点で対応不要", short: "対応不要" },
+    { value: "low", label: "定期的な経過確認", short: "経過確認" },
+    { value: "medium", label: "詳しい確認を行う", short: "詳しく確認" },
+    { value: "cleaning", label: "清掃・調整を行う", short: "清掃・調整" },
+    { value: "repair", label: "補修・改修を行う", short: "補修・改修" },
+    { value: "replace", label: "交換・更新を行う", short: "交換・更新" },
+    { value: "high", label: "早めの対応が必要", short: "早めに対応" },
+    { value: "urgent", label: "直ちに対応が必要", short: "直ちに対応" },
   ];
 
   const areaOptions = ["外壁", "屋根", "シーリング（目地の防水材）", "ベランダ防水", "雨樋", "窓まわり", "基礎", "付帯部（雨樋・破風など）", "その他"];
-  const findingConditionOptions = ["問題なし", "要確認", "軽微な劣化", "経年劣化が見られる", "劣化・不具合が見られる", "使用上の支障あり", "安全面の確認が必要"];
+  const findingConditionOptions = ["目立つ劣化・不具合なし", "確認範囲では判断できない", "劣化の兆候あり", "劣化が進行している", "一部に著しい劣化あり", "広範囲に著しい劣化あり"];
   const photoConditionOptions = ["目立った問題なし", "今後の経過確認が必要", "詳しい確認が必要", "劣化の兆候あり", "劣化が進行している", "不具合を確認", "早めの対応が必要", "直ちに対応が必要"];
   const photoPriorityConditions = ["早めの対応が必要", "直ちに対応が必要"];
   const PHOTO_PRIORITY_REPORT_TITLE = "特に確認しておきたい写真";
@@ -191,7 +191,7 @@
     assessmentUrgency: { label: "緊急性について", maxLength: 140, warningRatio: 0.85 },
     assessmentPolicy: { label: "おすすめの方向性", maxLength: 160, warningRatio: 0.85 },
     findingAreaOther: { label: "確認項目タイトル", maxLength: 40, warningRatio: 0.85 },
-    findingConditionOther: { label: "状態の自由入力", maxLength: 30, warningRatio: 0.85 },
+    findingConditionOther: { label: "現在の状態の自由入力", maxLength: 30, warningRatio: 0.85 },
     findingObservation: { label: "確認した内容", maxLength: 220, warningRatio: 0.85 },
     findingConcern: { label: "考えられること・注意点", maxLength: 260, warningRatio: 0.85 },
     findingProposal: { label: "対応の考え方", maxLength: 260, warningRatio: 0.85 },
@@ -347,7 +347,7 @@
       {
         id: createId(),
         area: "外壁",
-        condition: "劣化・不具合が見られる",
+        condition: "一部に著しい劣化あり",
         priority: "high",
         observation: "南面の外壁に色あせと細かなひびが見られました。",
         concern: "状態によっては、雨水が入りやすくなったり、塗膜の傷みが進む可能性があります。",
@@ -356,7 +356,7 @@
       {
         id: createId(),
         area: "シーリング（目地の防水材）",
-        condition: "軽微な劣化",
+        condition: "劣化の兆候あり",
         priority: "medium",
         observation: "窓まわりのシーリング（目地の防水材）に硬化と細かなすき間が見られました。",
         concern: "今後すき間が広がると、雨水が入り込む原因になる可能性があります。",
@@ -677,7 +677,7 @@
     return panel("6. 全体まとめ", [
       el("div", { className: "summary-strip" }, [
         metric("確認項目", `${state.findings.length}件`),
-        metric("早めに対処", `${state.findings.filter((item) => ["high", "urgent"].includes(item.priority)).length}件`),
+        metric("早めの対応が必要", `${state.findings.filter((item) => ["high", "urgent"].includes(item.priority)).length}件`),
         metric("写真", `${state.photos.length}枚`),
       ]),
       el("div", { className: "form-grid", style: "margin-top:12px" }, [
@@ -766,8 +766,8 @@
       ]),
       el("div", { className: "finding-card-body" }, [
         el("div", { className: "form-grid" }, [
-          selectField("状態", finding.condition, findingConditionOptions, (v) => patchFinding(finding.id, "condition", v)),
-          selectField("対応の目安", finding.priority, priorities.map((item) => item.value), (v) => patchFinding(finding.id, "priority", v), priorityLabel),
+          selectField("現在の状態", finding.condition, findingConditionOptions, (v) => patchFinding(finding.id, "condition", v)),
+          selectField("今後の対応", finding.priority, priorities.map((item) => item.value), (v) => patchFinding(finding.id, "priority", v), priorityLabel),
           textareaField("確認した内容", finding.observation, (v) => patchFinding(finding.id, "observation", v), "full", undefined, textLimit("findingObservation")),
           textareaField("考えられること・注意点", finding.concern, (v) => patchFinding(finding.id, "concern", v), "full", undefined, textLimit("findingConcern")),
           textareaField("対応の考え方", finding.proposal, (v) => patchFinding(finding.id, "proposal", v), "full", undefined, textLimit("findingProposal")),
@@ -2683,8 +2683,8 @@
     state.findings.forEach((finding, index) => {
       const prefix = `確認項目${index + 1}`;
       requireValue(finding.area, "確認項目", `${prefix}：確認項目名`);
-      requireValue(finding.condition, "確認項目", `${prefix}：状態`);
-      requireValue(finding.priority, "確認項目", `${prefix}：対応の目安`);
+      requireValue(finding.condition, "確認項目", `${prefix}：現在の状態`);
+      requireValue(finding.priority, "確認項目", `${prefix}：今後の対応`);
       requireValue(finding.observation, "確認項目", `${prefix}：確認した内容`);
       requireValue(finding.concern, "確認項目", `${prefix}：考えられること・注意点`);
       requireValue(finding.proposal, "確認項目", `${prefix}：対応の考え方`);
@@ -3131,7 +3131,7 @@
 
   function priorityBadge(value) {
     if (!value) return "";
-    const option = priorities.find((item) => item.value === value) || priorities[1];
+    const option = priorities.find((item) => item.value === value) || priorities.find((item) => item.value === "medium");
     return el("span", { className: `priority ${option.value}`, text: option.short });
   }
 
@@ -4279,8 +4279,8 @@
       return [
         `確認項目${findingIndex + 1}`,
         `確認項目名：${valueOrBlank(aiConsultationValue(finding.area))}`,
-        `状態：${valueOrBlank(aiConsultationValue(finding.condition))}`,
-        `対応の目安：${valueOrBlank(priorityLabel(finding.priority))}`,
+        `現在の状態：${valueOrBlank(aiConsultationValue(finding.condition))}`,
+        `今後の対応：${valueOrBlank(priorityLabel(finding.priority))}`,
         `確認した内容：${valueOrBlank(finding.observation)}`,
         `考えられること・注意点：${valueOrBlank(finding.concern)}`,
         `対応の考え方：${valueOrBlank(finding.proposal)}`,
@@ -4316,8 +4316,8 @@
       "【対応の考え方】は、その状態に対して、どう確認・補修・塗装・清掃・交換などを考えるかを書く欄です。担当者の見立てや施工上必要なことは弱めすぎず、分かりやすく伝えてください。例：サビや浮いた塗膜を除去し、必要な補修を行ったうえで塗替えを検討します。／排水状況を確認し、必要に応じて清掃や落ち葉対策を行います。\n\n" +
       "【現在のカード入力】\n" +
       `確認項目名：${area}\n` +
-      `状態：${condition}\n` +
-      `対応の目安：${priority}\n` +
+      `現在の状態：${condition}\n` +
+      `今後の対応：${priority}\n` +
       `確認した内容：${valueOrBlank(finding.observation)}\n` +
       `考えられること・注意点：${valueOrBlank(finding.concern)}\n` +
       `対応の考え方：${valueOrBlank(finding.proposal)}\n\n` +
@@ -4612,8 +4612,8 @@
       return [
         `確認項目${findingIndex + 1}`,
         `確認項目名：${valueOrBlank(aiConsultationValue(finding.area))}`,
-        `状態：${valueOrBlank(aiConsultationValue(finding.condition))}`,
-        `対応の目安：${valueOrBlank(priorityLabel(finding.priority))}`,
+        `現在の状態：${valueOrBlank(aiConsultationValue(finding.condition))}`,
+        `今後の対応：${valueOrBlank(priorityLabel(finding.priority))}`,
         `確認した内容：${valueOrBlank(finding.observation)}`,
         `考えられること・注意点：${valueOrBlank(finding.concern)}`,
         `対応の考え方：${valueOrBlank(finding.proposal)}`,
@@ -6340,24 +6340,40 @@
 
   function normalizePriority(value) {
     const map = {
+      "現時点で対応不要": "none",
+      "対応不要": "none",
       "優先度 高": "high",
       "優先度 中": "medium",
       "優先度 低": "low",
       "早めに確認": "high",
       "早めに対処": "high",
-      "経過確認": "medium",
-      "今後の参考": "low",
       "経過観察": "low",
+      "経過確認": "low",
+      "今後の参考": "low",
       "要確認": "medium",
       "状態確認": "medium",
+      "定期的な経過確認": "low",
+      "詳しい確認を行う": "medium",
+      "詳しく確認": "medium",
       "清掃・調整": "cleaning",
+      "清掃・調整を行う": "cleaning",
       "補修検討": "repair",
       "補修を検討": "repair",
+      "補修・改修": "repair",
+      "補修・改修を行う": "repair",
       "交換を検討": "replace",
+      "交換・更新": "replace",
+      "交換・更新を行う": "replace",
       "早めに対応": "high",
-      "早急な対応を検討": "urgent_review",
+      "早めの対応が必要": "high",
+      "urgent_review": "high",
+      "早急な対応を検討": "high",
+      "早急に対応": "high",
+      "早急な対応が必要": "high",
       "優先対応": "urgent",
       "優先して対応": "urgent",
+      "直ちに対応": "urgent",
+      "直ちに対応が必要": "urgent",
     };
     if (!value) return "";
     if (priorities.some((item) => item.value === value)) return value;
@@ -6377,13 +6393,20 @@
   function normalizeFindingConditionText(value) {
     const normalized = normalizeOptionText(value);
     const map = {
-      "軽い傷み": "軽微な劣化",
-      "軽度の傷み": "軽微な劣化",
-      "傷みあり": "劣化・不具合が見られる",
-      "劣化あり": "劣化・不具合が見られる",
-      "補修推奨": "劣化・不具合が見られる",
-      "早期対応推奨": "安全面の確認が必要",
-      "良好": "問題なし",
+      "問題なし": "目立つ劣化・不具合なし",
+      "良好": "目立つ劣化・不具合なし",
+      "要確認": "確認範囲では判断できない",
+      "安全面の確認が必要": "確認範囲では判断できない",
+      "軽微な劣化": "劣化の兆候あり",
+      "軽い傷み": "劣化の兆候あり",
+      "軽度の傷み": "劣化の兆候あり",
+      "経年劣化が見られる": "劣化が進行している",
+      "劣化・不具合が見られる": "一部に著しい劣化あり",
+      "使用上の支障あり": "一部に著しい劣化あり",
+      "傷みあり": "一部に著しい劣化あり",
+      "劣化あり": "一部に著しい劣化あり",
+      "補修推奨": "一部に著しい劣化あり",
+      "早期対応推奨": "一部に著しい劣化あり",
       "写真だけでは判断しにくい": "",
       "写真では判断しにくい": "",
     };

@@ -714,6 +714,11 @@ textarea:focus {
   color: var(--danger);
 }
 
+.priority.none {
+  background: #eef1f0;
+  color: #56645f;
+}
+
 .priority.medium {
   background: var(--accent-soft);
   color: #8d5a1e;
