@@ -3513,12 +3513,6 @@
         "総合目安",
         "緊急性について",
         "おすすめの方向性",
-        "緊急性",
-        "安全性",
-        "使用上の支障",
-        "劣化・損傷の程度",
-        "建物への影響",
-        "維持管理上の注意度",
       ],
       proposal: [
         "ご提案内容",
@@ -3577,7 +3571,6 @@
       addAiReplyField(entries, sections, ["対応の考え方"], "対応の考え方", finding.proposal, (value) => { finding.proposal = value; });
     } else if (targetType === "assessment") {
       addAssessmentSummaryAiReplyEntries(entries, sections);
-      addAssessmentAiReplyEntries(entries, sections);
     } else if (targetType === "proposal") {
       addAiReplyField(entries, sections, ["ご提案内容"], "ご提案内容", state.proposal.planName, (value) => { state.proposal.planName = value; });
       addAiReplyField(entries, sections, ["おすすめする施工方針"], "おすすめする施工方針", state.summary.recommendation, (value) => { state.summary.recommendation = value; });
