@@ -440,6 +440,9 @@
   let companyInfoChangePending = false;
   const app = document.getElementById("app");
 
+  window.addEventListener("beforeunload", handleBeforeUnload);
+  window.addEventListener("pagehide", persistBrowserDraftBeforeExit);
+  document.addEventListener("visibilitychange", handleVisibilityChange);
   bootstrap();
 
   async function bootstrap() {
@@ -463,7 +466,6 @@
         : `最終保存：${formatTime(new Date())}`,
     );
     render();
-    window.addEventListener("beforeunload", handleBeforeUnload);
   }
 
   function render() {
@@ -1753,7 +1755,7 @@
       el("div", { className: "data-help" }, [
         el("p", { text: "開く：保存済みの報告書フォルダを開きます。" }),
         el("p", { text: "上書き保存：現在開いている報告書フォルダに保存します。" }),
-        el("p", { text: "名前を付けて保存：別の名前や場所に保存します。" }),
+        el("p", { text: "名前を付けて保存：報告書名を自由に入力し、次に保存先の親フォルダを選びます。" }),
         el("p", { className: "company-settings-guide", text: "会社名・ロゴは、画面下部の「会社情報」から設定できます。" }),
       ]),
       el("div", { className: "row-actions" }, [
@@ -5124,23 +5126,96 @@
     render();
   }
 
+  function requestReportFolderName(initialValue) {
+    return new Promise((resolve) => {
+      let overlay;
+      const nameInput = el("input", {
+        type: "text",
+        value: safeText(initialValue),
+        maxlength: "80",
+        placeholder: "例：山田様邸 外壁調査報告書",
+        onkeydown: (event) => {
+          if (event.key === "Enter") {
+            event.preventDefault();
+            submit();
+          } else if (event.key === "Escape") {
+            event.preventDefault();
+            finish("");
+          }
+        },
+      });
+
+      const finish = (value) => {
+        overlay.remove();
+        resolve(value);
+      };
+      const submit = () => {
+        const folderName = safeText(nameInput.value).trim();
+        const errorMessage = reportFolderNameError(folderName);
+        if (errorMessage) {
+          window.alert(errorMessage);
+          nameInput.focus();
+          return;
+        }
+        finish(folderName);
+      };
+
+      overlay = el("div", { className: "confirm-screen" }, [
+        el("div", { className: "confirm-dialog" }, [
+          el("h2", { text: "報告書の名前を入力" }),
+          el("p", {
+            text:
+              "候補名は自由に書き換えられます。\n次の画面で保存先の親フォルダを選ぶと、その場所に入力した名前の報告書フォルダを作成します。",
+          }),
+          el("div", { className: "field" }, [
+            el("label", { text: "報告書フォルダ名" }),
+            nameInput,
+            el("span", { className: "field-hint", text: "80文字以内。\\ / : * ? \" < > | は使用できません。" }),
+          ]),
+          el("div", { className: "confirm-actions" }, [
+            button("キャンセル", "btn", () => finish("")),
+            button("保存先を選ぶ", "btn primary", submit),
+          ]),
+        ]),
+      ]);
+      document.body.appendChild(overlay);
+      window.requestAnimationFrame(() => {
+        nameInput.focus();
+        nameInput.select();
+      });
+    });
+  }
+
+  function reportFolderNameError(folderName) {
+    if (!folderName) return "報告書フォルダ名を入力してください。";
+    if (folderName.length > 80) return "報告書フォルダ名は80文字以内で入力してください。";
+    if (/[\\/:*?"<>|]/.test(folderName)) {
+      return "フォルダ名に使用できない文字が含まれています。\\ / : * ? \" < > | を除いてください。";
+    }
+    if (/[. ]$/.test(folderName) || [".", ".."].includes(folderName)) {
+      return "フォルダ名の末尾にピリオドや空白は使用できません。";
+    }
+    if (/^(con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\..*)?$/i.test(folderName)) {
+      return "この名前はフォルダ名に使用できません。別の名前を入力してください。";
+    }
+    if (isReservedFolderName(folderName)) {
+      return "photos または backup という名前は報告書フォルダ名に使えません。別の名前を入力してください。";
+    }
+    return "";
+  }
+
   async function saveDataAs() {
     let safeName = "";
     try {
-      const folderName = prompt("保存する報告書フォルダ名を入力してください。", sanitizeFolderName(inferReportName(state)));
-      if (!folderName) return false;
-      safeName = sanitizeFolderName(folderName);
-      if (!safeName) {
-        window.alert("フォルダ名を入力してください。");
-        return false;
-      }
-      if (isReservedFolderName(safeName)) {
-        window.alert("photos または backup という名前は報告書フォルダ名に使えません。別の名前を入力してください。");
-        return false;
-      }
+      safeName = await requestReportFolderName(sanitizeFolderName(inferReportName(state)));
+      if (!safeName) return false;
       setSaveStatus("保存中", "名前を付けて保存しています");
       if (window.showDirectoryPicker) {
-        const parentHandle = await window.showDirectoryPicker({ mode: "readwrite" });
+        const parentHandle = await window.showDirectoryPicker({
+          id: "building-report-save-parent",
+          mode: "readwrite",
+          startIn: "documents",
+        });
         if (isReservedFolderName(parentHandle.name)) {
           window.alert("このフォルダは保存先にできません。photos または backup ではなく、保存場所の親フォルダを選択してください。");
           setSaveStatus(externalDirty ? "未保存の変更があります" : "保存済み", saveStatus.detail);
@@ -5152,7 +5227,7 @@
           setSaveStatus(externalDirty ? "未保存の変更があります" : "保存済み", saveStatus.detail);
           return false;
         }
-        await writeProjectDirectory(reportHandle);
+        await writeProjectDirectory(reportHandle, safeName);
         currentDirectoryHandle = reportHandle;
         currentReportName = safeName;
         currentLocationLabel = `${parentHandle.name || "選択した場所"} > ${safeName}`;
@@ -5164,7 +5239,7 @@
         showToast("保存しました");
         return true;
       } else {
-        await downloadProjectBundle();
+        await downloadProjectBundle(safeName);
         currentDirectoryHandle = null;
         await forgetCurrentDirectoryHandle();
         currentReportName = safeName;
@@ -5173,7 +5248,9 @@
         externalDirty = false;
         saveState({ allowDestructive: true, markDirty: false, silent: true });
         setSaveStatus("保存済み", `最終保存：${formatTime(new Date())}`);
-        showToast("復元用の保存ファイルを作成しました");
+        window.alert(
+          "このブラウザでは保存先フォルダを直接選べないため、入力した報告書名で復元用の保存ファイルをダウンロードしました。\n保存先はブラウザのダウンロード設定に従います。",
+        );
         return true;
       }
     } catch (error) {
@@ -5184,7 +5261,7 @@
       console.error("Folder save failed", error);
       setSaveStatus("保存中", "フォルダ保存に失敗したため、保存ファイルを作成しています");
       try {
-        await downloadProjectBundle();
+        await downloadProjectBundle(safeName);
         currentDirectoryHandle = null;
         await forgetCurrentDirectoryHandle();
         currentReportName = safeName || currentReportName;
@@ -5193,7 +5270,9 @@
         externalDirty = false;
         saveState({ allowDestructive: true, markDirty: false, silent: true });
         setSaveStatus("保存済み", `最終保存：${formatTime(new Date())}`);
-        window.alert("保存先フォルダへの書き込みに失敗したため、代わりに復元用の保存データをダウンロードしました。");
+        window.alert(
+          "選んだフォルダへ保存できなかったため、入力した報告書名で復元用の保存データをダウンロードしました。\n保存先はブラウザのダウンロード設定に従います。",
+        );
         return true;
       } catch (fallbackError) {
         console.error("Fallback download failed", fallbackError);
@@ -5342,7 +5421,7 @@
     }
   }
 
-  async function writeProjectDirectory(directoryHandle) {
+  async function writeProjectDirectory(directoryHandle, reportName = "") {
     if (isReservedFolderName(directoryHandle.name)) {
       throw new Error("このフォルダは保存先にできません。報告書名の親フォルダを選択してください。");
     }
@@ -5363,7 +5442,10 @@
     const dataHandle = await directoryHandle.getFileHandle("report-data.json", { create: true });
     await writeFileHandle(
       dataHandle,
-      new Blob([JSON.stringify(await buildProjectData({ includeEmbeddedPhotos: false }), null, 2)], { type: "application/json" }),
+      new Blob(
+        [JSON.stringify(await buildProjectData({ includeEmbeddedPhotos: false, reportName }), null, 2)],
+        { type: "application/json" },
+      ),
     );
     await verifySavedDirectory(directoryHandle);
   }
@@ -5638,13 +5720,14 @@
     return data;
   }
 
-  async function downloadProjectBundle() {
-    const data = await buildProjectData({ includeEmbeddedPhotos: true });
+  async function downloadProjectBundle(reportName = "") {
+    const downloadName = sanitizeFolderName(reportName) || inferReportName(state);
+    const data = await buildProjectData({ includeEmbeddedPhotos: true, reportName: downloadName });
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `建物調査報告書_${state.project.clientName || "お客様"}_保存データ.json`;
+    a.download = `${downloadName}.json`;
     a.click();
     URL.revokeObjectURL(url);
   }
@@ -5680,7 +5763,7 @@
       app: "建物調査報告書メーカー",
       version: 2,
       savedAt: new Date().toISOString(),
-      reportName: currentReportName || inferReportName(state),
+      reportName: options.reportName || currentReportName || inferReportName(state),
       state: serializeStateForStorage(state),
     };
     if (options.includeEmbeddedPhotos) {
@@ -5798,8 +5881,19 @@
 
   function handleBeforeUnload(event) {
     if (!externalDirty && !saveStatus.failed) return;
+    persistBrowserDraftBeforeExit();
     event.preventDefault();
-    event.returnValue = "";
+    event.returnValue = true;
+    return true;
+  }
+
+  function persistBrowserDraftBeforeExit() {
+    if (!externalDirty && !saveStatus.failed) return;
+    saveState({ markDirty: false, silent: true });
+  }
+
+  function handleVisibilityChange() {
+    if (document.visibilityState === "hidden") persistBrowserDraftBeforeExit();
   }
 
   function confirmDiscardUnsaved(actionName) {
