@@ -3929,7 +3929,7 @@
     let ctx = canvas.getContext("2d");
     if (!ctx) throw new Error("Canvas is not available");
     ctx.font = '500 22px "Yu Gothic", "Meiryo", sans-serif';
-    const promptText = buildPhotoAiPromptText(photo);
+    const promptText = buildPhotoAiImagePromptText(photo);
     const promptLines = canvasWrappedLines(ctx, promptText, 1424);
     const promptHeight = 108 + Math.max(1, promptLines.length) * 34;
     const photoY = 132 + promptHeight + 30;
@@ -3964,7 +3964,7 @@
 
     drawAiPromptCard(
       ctx,
-      "AI相談用プロンプト",
+      "AIへの最優先指示",
       promptText,
       58,
       132,
@@ -4141,7 +4141,7 @@
   function drawAiPromptCard(ctx, heading, prompt, x, y, width, height, maxLines = 20) {
     drawRoundedPanel(ctx, x, y, width, height, 18, "#fff8f7", "#d9aaa6");
     drawCanvasText(ctx, heading, x + 30, y + 48, {
-      font: '700 24px "Yu Gothic", "Meiryo", sans-serif',
+      font: '700 30px "Yu Gothic", "Meiryo", sans-serif',
       color: "#8b1e24",
     });
     drawCanvasRule(ctx, x + 30, y + 70, x + width - 30, "#d9aaa6");
@@ -4312,12 +4312,99 @@
     return safeText(finding?.area).trim() || "未分類";
   }
 
+  function photoAnnotationAiSummary(photo) {
+    const annotations = normalizeAnnotations(photo?.annotations);
+    return {
+      total: annotations.length,
+      circleCount: annotations.filter((annotation) => annotation.type === "circle").length,
+      arrowCount: annotations.filter((annotation) => annotation.type === "arrow").length,
+    };
+  }
+
+  function buildPhotoAnnotationAiGuidance(photo) {
+    const summary = photoAnnotationAiSummary(photo);
+    if (!summary.total) return "";
+    const countText = [
+      summary.circleCount ? `〇${summary.circleCount}個` : "",
+      summary.arrowCount ? `矢印${summary.arrowCount}個` : "",
+    ]
+      .filter(Boolean)
+      .join("と");
+    const priorityTargetText = [
+      summary.circleCount ? "〇の内側" : "",
+      summary.arrowCount ? "矢印の先" : "",
+    ]
+      .filter(Boolean)
+      .join("と");
+    return (
+      "\n\n【写真の印について】\n" +
+      `この写真には、担当者が確認してほしい箇所を示す${countText}があります。\n` +
+      `画像が添付されている場合は、${priorityTargetText}を優先して確認し、そこから確認できる状態を【現在の状態】へ反映してください。\n` +
+      "印があるだけで劣化や不具合があると決めつけず、印の意味、原因、内部状態、危険性は断定しないでください。印の位置だけを根拠に、劣化範囲や危険度を広げて判断しないでください。\n" +
+      "印以外にも明らかな状態がある場合は、必要な範囲であわせて整理してください。印から読み取った内容と担当者の入力・選択内容が異なる場合は、担当者の内容を優先してください。\n" +
+      "必要な場合は「〇で示した箇所」「矢印の先」と表現できますが、報告書本文として不自然な場合は、印を言葉に出さず状態だけを自然にまとめてください。"
+    );
+  }
+
+  function buildPhotoAiImagePromptText(photo) {
+    const includeRecommendation = isPhotoRecommendationEnabled(photo);
+    const responseHeadings = ["【写真タイトル】", "【撮影箇所】", "【調査結果・判断】", "【現在の状態】"];
+    if (includeRecommendation) responseHeadings.push("【この箇所の対応方針】");
+
+    const annotationSummary = photoAnnotationAiSummary(photo);
+    const annotationGuidance = annotationSummary.total
+      ? (() => {
+          const countText = [
+            annotationSummary.circleCount ? `〇${annotationSummary.circleCount}個` : "",
+            annotationSummary.arrowCount ? `矢印${annotationSummary.arrowCount}個` : "",
+          ]
+            .filter(Boolean)
+            .join("と");
+          const priorityTargetText = [
+            annotationSummary.circleCount ? "〇の内側" : "",
+            annotationSummary.arrowCount ? "矢印の先" : "",
+          ]
+            .filter(Boolean)
+            .join("と");
+          return (
+            "\n\n【写真の印】\n" +
+            `この写真には${countText}があります。${priorityTargetText}を優先して確認し、見える状態を【現在の状態】へ反映してください。\n` +
+            "印だけで劣化や不具合があると決めつけず、印の意味、原因、内部状態、危険性は断定しないでください。"
+          );
+        })()
+      : "";
+    const recommendationLengthGuide = includeRecommendation
+      ? "\n・この箇所の対応方針：90〜110文字程度、長くても120文字以内"
+      : "";
+
+    return (
+      "これはアプリや画面の評価依頼ではありません。\n" +
+      "下の現場写真と入力内容を確認し、建物調査報告書へ載せるコメントを作成してください。\n" +
+      `必ず次の${responseHeadings.length}項目だけで回答し、前置き、解説、感想、補足、ほかの見出しは書かないでください。\n\n` +
+      "【回答見出し】\n" +
+      `${responseHeadings.join("\n")}\n\n` +
+      "【作成ルール】\n" +
+      "・担当者が入力・選択した内容を最優先してください。\n" +
+      "・写真で確認できる事実は明確に書いてください。\n" +
+      "・原因、内部状態、将来被害は、入力や写真から確認できなければ断定しないでください。\n" +
+      "・入力にない状態、危険性、工事内容を作り足さないでください。" +
+      annotationGuidance +
+      "\n\n【文字数目安】\n" +
+      "・写真タイトル：25文字程度\n" +
+      "・撮影箇所：20文字程度\n" +
+      "・調査結果・判断：20文字程度\n" +
+      "・現在の状態：90〜110文字程度、長くても120文字以内" +
+      recommendationLengthGuide
+    );
+  }
+
   function buildPhotoAiPromptText(photo) {
     const includeRecommendation = isPhotoRecommendationEnabled(photo);
     const responseHeadings = ["【写真タイトル】", "【撮影箇所】", "【調査結果・判断】", "【現在の状態】"];
     if (includeRecommendation) responseHeadings.push("【この箇所の対応方針】");
     return (
       buildPhotoAiPromptInstruction(includeRecommendation) +
+      buildPhotoAnnotationAiGuidance(photo) +
       "\n\n【参考情報】\n" +
       `所属する確認項目：${photoFindingName(photo)}\n` +
       `この情報は写真の文脈を理解するための参考です。回答欄としては追加せず、回答見出しは次の${responseHeadings.length}項目だけにしてください。\n` +
