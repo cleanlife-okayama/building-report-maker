@@ -4935,7 +4935,7 @@
 
   function buildReportSectionAiPrompt(sectionKey) {
     const valueOrBlank = (value) => safeText(value).trim() || "未入力";
-    const commonGuidance = ["concern", "summary"].includes(sectionKey)
+    const commonGuidance = ["concern", "assessment", "summary"].includes(sectionKey)
       ? AI_BUILDING_EXPERT_CORE_GUIDANCE
       : AI_WRITING_GUIDANCE;
     const commonStart =
