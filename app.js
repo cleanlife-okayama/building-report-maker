@@ -120,6 +120,7 @@
     "4. 選択済みの状態・判断・今後の対応と矛盾する文章を作らないでください。\n" +
     "5. 入力にない危険性、工事内容、効果を作り足さないでください。\n" +
     "6. 不安をあおらず、一般のお客様が判断しやすい言葉で、指定された見出しだけを回答してください。";
+  const PROPOSAL_PRIMARY_AI_REPLY_MARKER = "CL_REPORT_PROPOSAL_PRIMARY_V1";
   const AI_OUTPUT_SAFETY_GUIDANCE =
     "【重要な注意事項】\n" +
     "・担当者が入力した現場確認の事実、選択済みの状態、入力済みの施工方針は、必要に応じて明確に伝えてください。\n" +
@@ -3540,7 +3541,16 @@
   }
 
   function collectAiReplyImportEntries(text, targetType, targetId) {
-    const sections = parseAiReplySections(text);
+    const shouldNormalizeProposalPrimaryReply =
+      targetType === "proposal" &&
+      (isSingleTextCodeBlockAiReply(text) || hasProposalPrimaryAiReplyMarker(text));
+    const replyText = shouldNormalizeProposalPrimaryReply
+      ? removeProposalPrimaryAiReplyMarker(text)
+      : text;
+    const sections = parseAiReplySections(replyText);
+    if (shouldNormalizeProposalPrimaryReply) {
+      normalizeProposalPrimaryCodeBlockSections(sections);
+    }
     const entries = [];
     if (targetType === "photo") {
       const photo = state.photos.find((item) => item.id === targetId);
@@ -3580,6 +3590,78 @@
       addAiReplyField(entries, sections, ["全体のまとめ", "現在の全体まとめ"], "全体のまとめ", state.summary.overall, (value) => { state.summary.overall = value; });
     }
     return entries;
+  }
+
+  function isSingleTextCodeBlockAiReply(text) {
+    const source = safeText(text).replace(/\r\n?/g, "\n").trim();
+    return /^```text[ \t]*\n[\s\S]*\n```[ \t]*$/i.test(source);
+  }
+
+  function hasProposalPrimaryAiReplyMarker(text) {
+    return safeText(text)
+      .replace(/\r\n?/g, "\n")
+      .split("\n")
+      .some((line) => line.trim() === PROPOSAL_PRIMARY_AI_REPLY_MARKER);
+  }
+
+  function removeProposalPrimaryAiReplyMarker(text) {
+    return safeText(text)
+      .replace(/\r\n?/g, "\n")
+      .split("\n")
+      .filter((line) => line.trim() !== PROPOSAL_PRIMARY_AI_REPLY_MARKER)
+      .join("\n");
+  }
+
+  function normalizeProposalPrimaryCodeBlockSections(sections) {
+    ["ご提案内容", "おすすめする施工方針", "主な工事内容"].forEach((heading) => {
+      const key = normalizeAiReplyHeading(heading);
+      if (!isBlank(sections[key])) {
+        sections[key] = normalizeProposalPrimaryCodeBlockText(sections[key]);
+      }
+    });
+  }
+
+  function normalizeProposalPrimaryCodeBlockText(value) {
+    const result = [];
+    let proseLines = [];
+    const flushProse = () => {
+      if (!proseLines.length) return;
+      result.push(joinAiSoftWrappedLines(proseLines));
+      proseLines = [];
+    };
+
+    safeText(value)
+      .replace(/\r\n?/g, "\n")
+      .split("\n")
+      .forEach((line) => {
+        const trimmed = line.trim();
+        if (!trimmed) {
+          flushProse();
+          if (result.length && result[result.length - 1] !== "") result.push("");
+          return;
+        }
+        if (isAiReplyListLine(trimmed)) {
+          flushProse();
+          result.push(trimmed);
+          return;
+        }
+        proseLines.push(trimmed);
+      });
+    flushProse();
+
+    return result.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+  }
+
+  function joinAiSoftWrappedLines(lines) {
+    return lines.reduce((joined, line) => {
+      if (!joined) return line;
+      const needsSpace = /[A-Za-z0-9]$/.test(joined) && /^[A-Za-z0-9]/.test(line);
+      return `${joined}${needsSpace ? " " : ""}${line}`;
+    }, "");
+  }
+
+  function isAiReplyListLine(value) {
+    return /^(?:[・●○◆◇■□※＊*+\-－—–]|(?:\d+|[０-９]+)[.)．、]|[（(](?:\d+|[０-９]+)[）)])\s*/.test(value);
   }
 
   function addAiReplyField(entries, sections, headings, label, current, apply) {
@@ -4528,10 +4610,23 @@
       "【おすすめする施工方針】は、確認結果を受けて、なぜその対応が必要か、どの部分を優先して考えるかを説明する欄です。下地処理、清掃、補修、サビ止め、塗装、交換など、施工上必要なことは弱めすぎず、ただし不安をあおらず自然に伝えてください。\n" +
       "【主な工事内容】は、実際に行う作業内容を分かりやすく整理する欄です。作業名だけの羅列にせず、確認・清掃・撤去・補修・下地処理・塗装・交換などの流れが伝わるようにしてください。\n\n" +
       "施工方針AIでは、「適しています」「分かりやすいです」のようにAIが文章を評価しているような表現は避けてください。報告書本文として、「方針です」「進めます」「検討します」「保護する方針とします」のように自然な語尾でまとめてください。\n\n" +
-      "回答は必ず次の3つの見出しだけにしてください。見出し名は変更せず、ほかの見出しや総評は追加しないでください。\n\n" +
+      "回答で使う見出しは必ず次の3つだけにしてください。見出し名は変更せず、ほかの見出しや総評は追加しないでください。\n\n" +
+      "【コピーしやすい出力形式】\n" +
+      "回答全体を、1つのプレーンテキスト用コードブロックに入れてください。\n" +
+      "コードブロックの言語指定は text としてください。\n" +
+      "コードブロックの外には、前置き、感想、説明、補足を書かないでください。\n" +
+      "コードブロックの先頭には、下記例の識別行を文字を変えずに1行で入れてください。この識別行は回答見出しではなく、アプリへの貼り戻し時に自動で削除されます。\n" +
+      "コードブロック内では、指定された3つの見出しをそのまま使用してください。\n" +
+      "各見出しの本文は、原則として句点「。」ごとに改行してください。\n" +
+      "1文が長い場合は、読点「、」など意味が切れない自然な位置で改行し、1行は全角40〜50字程度を目安にしてください。\n" +
+      "単語や意味の途中で不自然に改行せず、見出し直後の本文と段落構成を維持してください。\n" +
+      "文章を短く削らず、表示上の改行だけを読みやすく整えてください。\n\n" +
+      "```text\n" +
+      `${PROPOSAL_PRIMARY_AI_REPLY_MARKER}\n` +
       "【ご提案内容】\n本文\n\n" +
       "【おすすめする施工方針】\n本文\n\n" +
-      "【主な工事内容】\n本文\n\n" +
+      "【主な工事内容】\n本文\n" +
+      "```\n\n" +
       "【現在の施工方針入力内容】\n" +
       `ご提案内容：${valueOrBlank(state.proposal.planName)}\n` +
       `おすすめする施工方針：${valueOrBlank(state.summary.recommendation)}\n` +
