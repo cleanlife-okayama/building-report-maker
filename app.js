@@ -4774,11 +4774,12 @@
       config.ruleKey === "proposalClosing"
         ? "500〜700文字程度を目安に、長くても800文字以内で整えてください。"
         : `${limit}字以内`;
+    const commonGuidance = fieldKey === "additional" ? AI_BUILDING_EXPERT_CORE_GUIDANCE : AI_WRITING_GUIDANCE;
     return (
       "【AI相談用プロンプト】\n\n" +
       "これはアプリ機能の一つです。作成した文章は、建物調査報告書メーカーの該当入力欄へコピーして使用します。前置きや感想、余計な補足説明は入れず、そのまま貼り付けやすい形で回答してください。\n\n" +
       "このAI回答は、新しく診断を確定するものではありません。担当者の入力内容と、確認項目・写真情報・施工方針をもとに、一般のお客様にも伝わる自然な文章へ整える補助です。\n\n" +
-      AI_WRITING_GUIDANCE +
+      commonGuidance +
       "\n\n" +
       "【この欄の相談方針】\n" +
       `${config.guidance}\n\n` +
