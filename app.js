@@ -275,7 +275,7 @@
     },
   ];
   const fieldPlaceholders = {
-    お客様名: "例：山田 太郎 様",
+    お客様名: "敬称を付けずに入力してください。プレビュー・印刷・PDFでは、自動で「様」を表示します。",
     工事名: "例：山田様邸 屋根塗装改修工事",
     現場住所: "例：岡山市北区○○",
     担当者: "例：小林 晋",
@@ -343,7 +343,7 @@
     },
     project: {
       title: "建物調査報告書",
-      clientName: "山田 太郎 様",
+      clientName: "山田 太郎",
       workName: "岡山市北区 ご自宅",
       address: "岡山市北区○○",
       surveyDate: today,
@@ -671,7 +671,7 @@
   function renderProjectPanel() {
     return panel("基本情報", [
       el("div", { className: "form-grid" }, [
-        inputField("お客様名", state.project.clientName, (v) => update("project.clientName", v), "", "text", undefined, textLimit("projectClientName")),
+        inputField("お客様名", state.project.clientName, (v) => update("project.clientName", v), "", "text", "例：山田 太郎（敬称不要）", textLimit("projectClientName")),
         inputField("工事名", state.project.workName, (v) => update("project.workName", v), "", "text", undefined, textLimit("projectWorkName")),
         inputField("現場住所", state.project.address, (v) => update("project.address", v), "full", "text", undefined, textLimit("projectAddress")),
         inputField("調査日時（日付）", state.project.surveyDate, (v) => update("project.surveyDate", v), "", "date"),
@@ -2037,6 +2037,7 @@
   function renderReport() {
     const firstPhoto = state.photos[0];
     const reportCompanyName = companyDisplayName();
+    const reportCustomerName = formatCustomerNameForReport(state.project.clientName);
     const findingPhotoReportChildren = isGroupedReportLayout()
       ? [renderGroupedFindingPhotoReportContent()]
       : [renderFindingReportContent(), renderPhotoReportContent()];
@@ -2053,7 +2054,7 @@
           el("div", { className: "cover-side" }, [
             el("p", {
               className: "report-lead cover-lead",
-              text: `${state.project.clientName || "お客様"}へ、現地で確認した内容を分かりやすく整理しました。必要と思われる対応と注意点を、判断しやすい形でお伝えします。`,
+              text: "現地で確認した内容を分かりやすく整理しました。必要と思われる対応と注意点を、判断しやすい形でお伝えします。",
             }),
             renderCoverConcernCard(),
             el("div", { className: "cover-photo" }, [
@@ -2063,7 +2064,7 @@
             ]),
           ]),
           el("div", { className: "cover-info" }, [
-            meta("お客様名", state.project.clientName),
+            meta("お客様名", reportCustomerName),
             meta("調査日時", formatSurveyDateTime()),
             companyContactMeta(),
             meta("住所", state.project.address),
@@ -2981,7 +2982,7 @@
   function renderAssessmentProjectInfo() {
     return el("div", { className: "assessment-project-info" }, [
       el("div", { className: "assessment-info-column" }, [
-        assessmentInfoItem("お客様名", state.project.clientName, "person"),
+        assessmentInfoItem("お客様名", formatCustomerNameForReport(state.project.clientName), "person"),
         assessmentDateTimeItem(),
       ]),
       el("div", { className: "assessment-info-column" }, [
@@ -6006,7 +6007,7 @@
   function pdfOverLimitFields() {
     const fields = [
       pdfTextField("projectWorkName", state.project.workName),
-      pdfTextField("projectClientName", state.project.clientName),
+      pdfTextField("projectClientName", formatCustomerNameForReport(state.project.clientName)),
       pdfTextField("projectAddress", state.project.address),
       isOtherValue(state.project.buildingType, buildingTypeOptions)
         ? pdfTextField("projectBuildingTypeOther", state.project.buildingType)
@@ -6471,6 +6472,13 @@
 
   function safeText(value) {
     return value || "";
+  }
+
+  function formatCustomerNameForReport(value) {
+    const customerName = safeText(value).trim();
+    if (!customerName) return "";
+    const nameWithoutHonorific = customerName.replace(/(?:\s*(?:様|さま|御中|殿|先生|各位))+$/, "").trim();
+    return nameWithoutHonorific ? `${nameWithoutHonorific}様` : "";
   }
 
   function createId() {
