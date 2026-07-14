@@ -48,6 +48,7 @@
   const findingConditionOptions = ["目立つ劣化・不具合なし", "確認範囲では判断できない", "劣化の兆候あり", "劣化が進行している", "一部に著しい劣化あり", "広範囲に著しい劣化あり"];
   const photoConditionOptions = ["目立った問題なし", "今後の経過確認が必要", "詳しい確認が必要", "劣化の兆候あり", "劣化が進行している", "不具合を確認", "早めの対応が必要", "直ちに対応が必要"];
   const photoPriorityConditions = ["早めの対応が必要", "直ちに対応が必要"];
+  const photoRecommendationDisplayModes = ["priorityOnly", "legacyVisible"];
   const PHOTO_PRIORITY_REPORT_TITLE = "特に確認しておきたい写真";
   const PHOTO_PRIORITY_REPORT_NOTE = "この箇所は、補修方針を考えるうえで優先して確認したい写真です。";
   const FINDING_PHOTO_REPORT_SECTION_TITLE = "1. 調査写真・確認項目ごとの確認結果";
@@ -103,7 +104,7 @@
     "現場の状態、そのままにした場合の心配、対応する理由、工事で確認すること、お客様にとっての安心材料が自然につながるように整えてください。\n" +
     "担当者が入力した現場確認の事実、選択済みの状態、担当者の見立ては、必要に応じて明確に伝えてください。写真や入力内容で確認できる状態は「見られます」「確認されています」「確認できます」のように書いて構いません。\n" +
     "施工上一般的に必要な作業や、入力済みの施工方針に含まれる内容は、「必要です」「大切です」「確認します」のように分かりやすく伝えてください。\n" +
-    "特に「対応の考え方」や「この箇所の対応目安」は、作業内容だけで終わらせず、その対応を検討する理由、そのままにした場合に考えられる心配、対応することで期待できる安心感を、入力内容から分かる範囲で含めてください。\n" +
+    "対応を説明する欄では、作業内容だけで終わらせず、その対応を検討する理由、そのままにした場合に考えられる心配、対応することで期待できる安心感を、入力内容から分かる範囲で含めてください。\n" +
     "一般のお客様が読んだときに、責められている、強く不安をあおられていると感じにくい、やわらかく落ち着いた表現にしてください。\n" +
     "「古い」「管理が悪い」「放置されている」など、責任を強く感じさせる表現は避け、「使用感がある」「劣化が見られる」「整備が必要な状態」など、状態を客観的に伝える表現へ置き換えてください。\n" +
     "入力内容から読み取れる場合は、見た目の印象、清潔感、安全性、水漏れなどの心配も補足できます。ただし、原因、内部状態、将来必ず起こる被害、効果保証は断定しないでください。断定できない部分だけ「可能性があります」「確認が必要です」「検討します」などの表現に置き換え、写真や入力内容で確認できる事実まで弱めすぎないでください。\n" +
@@ -124,59 +125,67 @@
     "・同じ内容の繰り返しを減らし、報告書全体の流れが自然になるようにしてください。\n" +
     "・売り込み感を強くしすぎず、お客様が納得して判断できる文章にしてください。\n" +
     "・不要な工事を強くすすめる表現は避けてください。";
-  const AI_PHOTO_IMPORTANT_GUIDANCE =
-    "【最重要】\n" +
-    "この画像の内容をもとに、必ず下記5項目だけで回答してください。\n" +
-    "【写真タイトル】\n" +
-    "【撮影箇所】\n" +
-    "【調査結果・判断】\n" +
-    "【現在の状態】\n" +
-    "【この箇所の対応目安】\n\n" +
-    "このAI回答は、写真から新しく診断を確定するものではありません。\n" +
-    "担当者が確認した内容や、写真と入力内容から分かる範囲をもとに、お客様にも伝わる自然な文章へ整えるための補助です。\n\n" +
-    "文字数目安：\n" +
-    "・写真タイトル：25文字程度\n" +
-    "・撮影箇所：20文字程度\n" +
-    "・調査結果・判断：20文字程度\n" +
-    "・現在の状態：90〜110文字程度、長くても120文字以内\n" +
-    "・この箇所の対応目安：90〜110文字程度、長くても120文字以内\n\n" +
-    "写真タイトルの考え方：\n" +
-    "似た写真が複数ある場合でも、写真タイトルの重複を完全になくす必要はありません。\n" +
-    "ただし、写真で分かる範囲で「全体」「近景」「詳細」「別角度」「端部」「取り合い」「周辺状況」「施工環境」などの役割が分かる言葉を入れ、何を見せる写真かが伝わるタイトルにしてください。\n" +
-    "写真から分からない内容を付け足したり、不自然に長いタイトルにはしないでください。\n" +
-    "例：屋根全体の劣化確認／屋根端部のサビ確認／屋根谷部の汚れ堆積確認／屋根釘まわりのサビ確認／屋根まわりの施工環境確認\n\n" +
-    "「現在の状態」と「この箇所の対応目安」の分け方：\n" +
-    "【現在の状態】は、写真や入力内容で確認できる事実を中心に書いてください。見えている劣化、汚れ、サビ、穴あき、浮き、割れ、水たまり、周辺状況などを客観的に整理し、補修方法やおすすめ内容はここに混ぜないでください。\n" +
-    "【この箇所の対応目安】は、その箇所に対して今後どう確認・清掃・補修・塗装・交換などを検討するかを書いてください。対応が必要な理由は、現在の状態と自然につながる範囲で簡潔に入れてください。\n" +
-    "写真だけでは原因や内部状態が分からない場合は、現在の状態で断定せず、対応目安側で「確認が必要です」「状態に応じて判断します」のように整理してください。\n\n" +
-    "対応目安の語尾・言い回し：\n" +
-    "【この箇所の対応目安】では、「おすすめします」を毎回使わず、実際の確認・清掃・補修・塗装・交換の流れが伝わる語尾を中心にしてください。\n" +
-    "基本は「確認します」「行います」「検討します」「整えます」「状態に応じて判断します」「必要に応じて対応します」を使い、本当に提案として自然な場合だけ「おすすめします」を使ってください。\n" +
-    "避けたい例：補修と塗装をおすすめします／下地処理を行うことをおすすめします／早めの対応をおすすめします／必要な対応を検討することをおすすめします\n" +
-    "良い例：軒樋内部を清掃し、排水の流れや勾配を確認します。／屋根端部はサビを落とし、傷みの範囲に応じて補修・サビ止め・塗装を検討します。\n\n" +
-    "注意：\n" +
-    "短くすることを優先しすぎて、必要な理由や注意点を削りすぎないでください。\n" +
-    "写真で見えている状態は「見られます」「確認できます」のように明確に伝えて構いません。ただし、写真だけでは分からない原因、内部状態、将来必ず起こる被害は断定しないでください。断定できない部分だけ「可能性があります」「確認が必要です」などにし、確認できる事実まで弱めすぎないでください。\n\n";
-  const AI_PHOTO_PROMPT =
-    AI_PHOTO_IMPORTANT_GUIDANCE +
-    "これはアプリ機能の一つです。作成したコメントは、建物調査報告書メーカーの各入力欄へコピーして使用します。前置きや補足説明はできるだけ省き、そのまま貼り付けやすい形で回答してください。\n\n" +
-    "この画像を読み取ったAIは、まずこのプロンプトに従ってください。下の写真と入力内容を確認し、建物調査報告書に載せるコメント案を作成してください。\n\n" +
-    "入力済み・空欄を問わず、写真と入力内容から分かる範囲で、次の全項目を整えてください。\n" +
-    "・写真タイトル\n・撮影箇所\n・調査結果・判断\n・現在の状態\n・この箇所の対応目安\n\n" +
-    "回答は必ず次の見出しごとに分け、すべての項目を省略せず回答してください。\n" +
-    "【写真タイトル】\n【撮影箇所】\n【調査結果・判断】\n【現在の状態】\n【この箇所の対応目安】\n\n" +
-    "見出し名は変更せず、この5つ以外の見出しは回答に含めないでください。\n\n" +
-    "空欄があっても「未入力です」で止めず、写真と入力内容から分かる範囲で全項目の案を作成してください。入力済みの内容も省略せず、必要に応じて分かりやすく整えてください。\n\n" +
-    "一般のお客様にも伝わる、やさしく自然な説明文にしてください。写真で見える状態と、追加確認が必要なことを分けて書いてください。写真だけで断定できない原因、内部状態、将来必ず起こる被害は断定しないでください。断定できない部分だけ「可能性があります」「確認が必要です」などにし、確認できる事実まで弱めすぎないでください。\n\n" +
-    "入力内容に「前項と同様」「上記の通り」「前頁と同様」「同じです」などの表現がある場合も、そのまま使わず、この項目だけで意味が通る文章に言い換えてください。\n\n" +
-    AI_WRITING_GUIDANCE +
-    "\n\n各項目は、報告書のPDF・印刷時にレイアウトが崩れないよう、次の文字数を目安に整えてください。\n" +
-    "【写真タイトル】25字程度\n" +
-    "【撮影箇所】20字程度\n" +
-    "【調査結果・判断】20字以内\n" +
-    "【現在の状態】90〜110字程度、長くても120字以内\n" +
-    "【この箇所の対応目安】90〜110字程度、長くても120字以内\n\n" +
-    "各欄の文字数目安内で、必要な説明は省略しすぎず、お客様が納得して判断できる文章にしてください。短くまとめることよりも、分かりやすく伝わることを優先してください。無理に文字数を増やさず、理由・背景・不安への配慮・対応する意味が自然に伝わる文章を優先してください。短い例を入れた方が伝わりやすい場合は、自然な範囲で入れてください。ただし、入力内容にない原因・工事内容・効果・危険性を断定して追加しないでください。";
+  function buildPhotoAiPromptInstruction(includeRecommendation) {
+    const responseFields = ["写真タイトル", "撮影箇所", "調査結果・判断", "現在の状態"];
+    if (includeRecommendation) responseFields.push("この箇所の対応方針");
+    const headingText = responseFields.map((label) => `【${label}】`).join("\n");
+    const bulletText = responseFields.map((label) => `・${label}`).join("\n");
+    const recommendationLengthGuide = includeRecommendation
+      ? "・この箇所の対応方針：90〜110文字程度、長くても120文字以内\n"
+      : "";
+    const recommendationGuidance = includeRecommendation
+      ? "「現在の状態」と「この箇所の対応方針」の分け方：\n" +
+        "【現在の状態】は、写真や入力内容で確認できる事実を中心に書いてください。見えている劣化、汚れ、サビ、穴あき、浮き、割れ、水たまり、周辺状況などを客観的に整理し、補修方法やおすすめ内容はここに混ぜないでください。\n" +
+        "【この箇所の対応方針】は、その箇所に対して今後どう確認・清掃・補修・塗装・交換などを検討するかを書いてください。対応が必要な理由は、現在の状態と自然につながる範囲で簡潔に入れてください。\n" +
+        "写真だけでは原因や内部状態が分からない場合は、現在の状態で断定せず、対応方針側で「確認が必要です」「状態に応じて判断します」のように整理してください。\n\n" +
+        "対応方針の語尾・言い回し：\n" +
+        "【この箇所の対応方針】では、「おすすめします」を毎回使わず、実際の確認・清掃・補修・塗装・交換の流れが伝わる語尾を中心にしてください。\n" +
+        "基本は「確認します」「行います」「検討します」「整えます」「状態に応じて判断します」「必要に応じて対応します」を使い、本当に提案として自然な場合だけ「おすすめします」を使ってください。\n" +
+        "避けたい例：補修と塗装をおすすめします／下地処理を行うことをおすすめします／早めの対応をおすすめします／必要な対応を検討することをおすすめします\n" +
+        "良い例：軒樋内部を清掃し、排水の流れや勾配を確認します。／屋根端部はサビを落とし、傷みの範囲に応じて補修・サビ止め・塗装を検討します。\n\n"
+      : "【現在の状態】は、写真や入力内容で確認できる事実を中心に書いてください。見えている劣化、汚れ、サビ、穴あき、浮き、割れ、水たまり、周辺状況などを客観的に整理し、補修方法やおすすめ内容はここに混ぜないでください。\n\n";
+
+    return (
+      "【最重要】\n" +
+      `この画像の内容をもとに、必ず下記${responseFields.length}項目だけで回答してください。\n` +
+      `${headingText}\n\n` +
+      "このAI回答は、写真から新しく診断を確定するものではありません。\n" +
+      "担当者が確認した内容や、写真と入力内容から分かる範囲をもとに、お客様にも伝わる自然な文章へ整えるための補助です。\n\n" +
+      "文字数目安：\n" +
+      "・写真タイトル：25文字程度\n" +
+      "・撮影箇所：20文字程度\n" +
+      "・調査結果・判断：20文字程度\n" +
+      "・現在の状態：90〜110文字程度、長くても120文字以内\n" +
+      recommendationLengthGuide +
+      "\n写真タイトルの考え方：\n" +
+      "似た写真が複数ある場合でも、写真タイトルの重複を完全になくす必要はありません。\n" +
+      "ただし、写真で分かる範囲で「全体」「近景」「詳細」「別角度」「端部」「取り合い」「周辺状況」「施工環境」などの役割が分かる言葉を入れ、何を見せる写真かが伝わるタイトルにしてください。\n" +
+      "写真から分からない内容を付け足したり、不自然に長いタイトルにはしないでください。\n" +
+      "例：屋根全体の劣化確認／屋根端部のサビ確認／屋根谷部の汚れ堆積確認／屋根釘まわりのサビ確認／屋根まわりの施工環境確認\n\n" +
+      recommendationGuidance +
+      "注意：\n" +
+      "短くすることを優先しすぎて、必要な理由や注意点を削りすぎないでください。\n" +
+      "写真で見えている状態は「見られます」「確認できます」のように明確に伝えて構いません。ただし、写真だけでは分からない原因、内部状態、将来必ず起こる被害は断定しないでください。断定できない部分だけ「可能性があります」「確認が必要です」などにし、確認できる事実まで弱めすぎないでください。\n\n" +
+      "これはアプリ機能の一つです。作成したコメントは、建物調査報告書メーカーの各入力欄へコピーして使用します。前置きや補足説明はできるだけ省き、そのまま貼り付けやすい形で回答してください。\n\n" +
+      "この画像を読み取ったAIは、まずこのプロンプトに従ってください。下の写真と入力内容を確認し、建物調査報告書に載せるコメント案を作成してください。\n\n" +
+      "入力済み・空欄を問わず、写真と入力内容から分かる範囲で、次の全項目を整えてください。\n" +
+      `${bulletText}\n\n` +
+      "回答は必ず次の見出しごとに分け、すべての項目を省略せず回答してください。\n" +
+      `${headingText}\n\n` +
+      `見出し名は変更せず、この${responseFields.length}つ以外の見出しは回答に含めないでください。\n\n` +
+      "空欄があっても「未入力です」で止めず、写真と入力内容から分かる範囲で全項目の案を作成してください。入力済みの内容も省略せず、必要に応じて分かりやすく整えてください。\n\n" +
+      "一般のお客様にも伝わる、やさしく自然な説明文にしてください。写真で見える状態と、追加確認が必要なことを分けて書いてください。写真だけで断定できない原因、内部状態、将来必ず起こる被害は断定しないでください。断定できない部分だけ「可能性があります」「確認が必要です」などにし、確認できる事実まで弱めすぎないでください。\n\n" +
+      "入力内容に「前項と同様」「上記の通り」「前頁と同様」「同じです」などの表現がある場合も、そのまま使わず、この項目だけで意味が通る文章に言い換えてください。\n\n" +
+      AI_WRITING_GUIDANCE +
+      "\n\n各項目は、報告書のPDF・印刷時にレイアウトが崩れないよう、次の文字数を目安に整えてください。\n" +
+      "【写真タイトル】25字程度\n" +
+      "【撮影箇所】20字程度\n" +
+      "【調査結果・判断】20字以内\n" +
+      "【現在の状態】90〜110字程度、長くても120字以内\n" +
+      (includeRecommendation ? "【この箇所の対応方針】90〜110字程度、長くても120字以内\n" : "") +
+      "\n各欄の文字数目安内で、必要な説明は省略しすぎず、お客様が納得して判断できる文章にしてください。短くまとめることよりも、分かりやすく伝わることを優先してください。無理に文字数を増やさず、理由・背景・不安への配慮・対応する意味が自然に伝わる文章を優先してください。短い例を入れた方が伝わりやすい場合は、自然な範囲で入れてください。ただし、入力内容にない原因・工事内容・効果・危険性を断定して追加しないでください。"
+    );
+  }
   const PDF_TEXT_FIELD_RULES = {
     projectWorkName: { label: "工事名", maxLength: 60, warningRatio: 0.85 },
     projectClientName: { label: "お客様名", maxLength: 40, warningRatio: 0.85 },
@@ -199,7 +208,7 @@
     photoAreaOther: { label: "撮影箇所の自由入力", maxLength: 20, warningRatio: 0.85 },
     photoConditionOther: { label: "調査結果・判断の自由入力", maxLength: 20, warningRatio: 0.85 },
     photoFinding: { label: "現在の状態", maxLength: 120, warningRatio: 0.85 },
-    photoRecommendation: { label: "この箇所の対応目安", maxLength: 120, warningRatio: 0.85 },
+    photoRecommendation: { label: "この箇所の対応方針", maxLength: 120, warningRatio: 0.85 },
     proposalPlanName: { label: "ご提案内容", maxLength: 60, warningRatio: 0.85 },
     proposalRecommendation: { label: "おすすめする施工方針", maxLength: 260, warningRatio: 0.85 },
     proposalScope: { label: "主な工事内容", maxLength: 220, warningRatio: 0.85 },
@@ -276,7 +285,7 @@
       "まず何を確認し、どのような対応を検討するかを書いてください。\n箇条書きでもOKです。\n例：浮きや割れの範囲を確認し、必要に応じて補修を検討します。",
     撮影箇所: "20文字程度で入力してください。\n例：西面外壁／キッチン流し台／リビング天井",
     確認項目名: "例：屋根／外壁／室内現状回復／キッチン流し台／階段踏面",
-    この箇所の対応目安:
+    この箇所の対応方針:
       "90〜110文字程度、長くても120文字以内が目安です。\nどう確認・清掃・補修・塗装・交換するかを書いてください。箇条書きでもOKです。\n例：雨漏れの原因を確認し、必要に応じて補修を行います。",
     総合目安:
       "今回の確認結果をもとに、全体としてどのような状態かを書いてください。\n例：塗替えと補修を検討する時期です。",
@@ -976,14 +985,16 @@
             inputField("撮影箇所", photo.area, (v) => patchPhoto(photo.id, "area", v), "", "text", "例：西面外壁／キッチン流し台／リビング天井", textLimit("photoAreaOther")),
             el("div", { className: "field photo-condition-field" }, [
               el("label", { text: "調査結果・判断" }),
-              selectInlineWithOther(photo.condition || "", photoConditionOptions, (v) => patchPhoto(photo.id, "condition", v), photoConditionOptionLabel, textLimit("photoConditionOther")),
+              selectInlineWithOther(photo.condition || "", photoConditionOptions, (v) => patchPhotoCondition(photo.id, v), photoConditionOptionLabel, textLimit("photoConditionOther")),
               el("span", {
                 className: "field-hint photo-priority-hint",
                 text: "「PDF重点表示」の項目を選ぶと、印刷/PDFでは「特に確認しておきたい写真」として1枚で大きめに表示されます。",
               }),
             ]),
             textareaField("現在の状態", findingText, (v) => patchPhoto(photo.id, "finding", v), "full", undefined, textLimit("photoFinding")),
-            textareaField("この箇所の対応目安", photo.recommendation, (v) => patchPhoto(photo.id, "recommendation", v), "full", undefined, textLimit("photoRecommendation")),
+            isPhotoRecommendationEnabled(photo)
+              ? textareaField("この箇所の対応方針", photo.recommendation, (v) => patchPhoto(photo.id, "recommendation", v), "full", undefined, textLimit("photoRecommendation"))
+              : "",
           ]),
         ]),
       ]),
@@ -2302,7 +2313,7 @@
           photo.area ? detailItem("撮影箇所", photo.area) : "",
           photo.condition ? detailItem("調査結果・判断", photo.condition) : "",
           photo.finding || photo.memo ? detailItem("現在の状態", photo.finding || photo.memo) : "",
-          photo.recommendation ? detailItem("この箇所の対応目安", photo.recommendation) : "",
+          shouldShowPhotoRecommendation(photo) ? detailItem("この箇所の対応方針", photo.recommendation) : "",
         ]),
       ]),
     ]);
@@ -2328,8 +2339,21 @@
     return photoPriorityConditions.includes(safeText(photo.condition));
   }
 
+  function isPhotoRecommendationEnabled(photo) {
+    return photo?.recommendationDisplayMode === "legacyVisible" || isPriorityPhoto(photo);
+  }
+
+  function shouldShowPhotoRecommendation(photo) {
+    return isPhotoRecommendationEnabled(photo) && !isBlank(photo?.recommendation);
+  }
+
+  function isPhotoRecommendationRequired(photo) {
+    return photo?.recommendationDisplayMode === "priorityOnly" && isPriorityPhoto(photo);
+  }
+
   function isLongPhotoCard(photo) {
-    const text = [photo.title, photo.area, photo.condition, photo.finding, photo.recommendation].join(" ");
+    const recommendation = shouldShowPhotoRecommendation(photo) ? photo.recommendation : "";
+    const text = [photo.title, photo.area, photo.condition, photo.finding, recommendation].join(" ");
     return textLength(text) > 260;
   }
 
@@ -2647,7 +2671,9 @@
         requireValue(photo.condition, "調査写真", `${prefix}：調査結果・判断`);
       }
       requireValue(findingText, "調査写真", `${prefix}：現在の状態`);
-      requireValue(photo.recommendation, "調査写真", `${prefix}：この箇所の対応目安`);
+      if (isPhotoRecommendationRequired(photo)) {
+        requireValue(photo.recommendation, "調査写真", `${prefix}：この箇所の対応方針`);
+      }
       if (textLength(findingText) > 120) {
         add(
           "recommended",
@@ -2656,12 +2682,12 @@
           `${prefix}：現在の状態が長めです。PDF上、印刷で写真カードが大きくなる可能性がありページが崩れる可能性があります。90〜110文字程度、長くても120文字以内を目安に整えてください。`,
         );
       }
-      if (textLength(photo.recommendation) > 120) {
+      if (shouldShowPhotoRecommendation(photo) && textLength(photo.recommendation) > 120) {
         add(
           "recommended",
           "調査写真",
-          `${prefix}：この箇所の対応目安`,
-          `${prefix}：この箇所の対応目安が長めです。PDF上、印刷で写真カードが大きくなる可能性がありページが崩れる可能性があります。90〜110文字程度、長くても120文字以内を目安に整えてください。`,
+          `${prefix}：この箇所の対応方針`,
+          `${prefix}：この箇所の対応方針が長めです。PDF上、印刷で写真カードが大きくなる可能性がありページが崩れる可能性があります。90〜110文字程度、長くても120文字以内を目安に整えてください。`,
         );
       }
     });
@@ -3352,6 +3378,15 @@
     saveState();
   }
 
+  function patchPhotoCondition(id, value) {
+    const target = state.photos.find((item) => item.id === id);
+    if (!target) return;
+    const wasRecommendationEnabled = isPhotoRecommendationEnabled(target);
+    target.condition = value;
+    saveState();
+    if (wasRecommendationEnabled !== isPhotoRecommendationEnabled(target)) render();
+  }
+
   function patchAssessmentItem(id, value) {
     const item = state.assessment.items.find((entry) => entry.id === id);
     if (!item) return;
@@ -3384,7 +3419,7 @@
 
     const syncPreview = () => {
       currentEntries = collectAiReplyImportEntries(textarea.value, targetType, targetId);
-      const status = getAiReplyImportStatus(currentEntries, targetType);
+      const status = getAiReplyImportStatus(currentEntries, targetType, targetId);
       preview.replaceChildren(
         currentEntries.length
           ? el("div", { className: "ai-reply-preview-list" }, [
@@ -3426,7 +3461,7 @@
               window.alert("反映できる見出しが見つかりませんでした。AI回答の見出しを確認してください。");
               return;
             }
-            const status = getAiReplyImportStatus(currentEntries, targetType);
+            const status = getAiReplyImportStatus(currentEntries, targetType, targetId);
             if (
               status.missing.length > 0 &&
               !window.confirm(`読み取れなかった項目があります。\n\n未検出：${status.missing.join("、")}\n\n反映できる項目だけ反映しますか？`)
@@ -3454,15 +3489,12 @@
     textarea.focus();
   }
 
-  function getAiReplyImportStatus(entries, targetType) {
+  function getAiReplyImportStatus(entries, targetType, targetId) {
+    const photo = targetType === "photo" ? state.photos.find((item) => item.id === targetId) : null;
+    const photoExpected = ["写真タイトル", "撮影箇所", "調査結果・判断", "現在の状態"];
+    if (photo && isPhotoRecommendationEnabled(photo)) photoExpected.push("この箇所の対応方針");
     const expected = {
-      photo: [
-        "写真タイトル",
-        "撮影箇所",
-        "調査結果・判断",
-        "現在の状態",
-        "この箇所の対応目安",
-      ],
+      photo: photoExpected,
       finding: [
         "確認した内容",
         "考えられること・注意点",
@@ -3509,7 +3541,16 @@
       addAiReplyField(entries, sections, ["撮影箇所"], "撮影箇所", photo.area, (value) => { photo.area = value; });
       addAiReplyField(entries, sections, ["調査結果・判断", "調査結果の目安"], "調査結果・判断", photo.condition, (value) => { photo.condition = value; });
       addAiReplyField(entries, sections, ["現在の状態"], "現在の状態", photo.finding || photo.memo, (value) => { photo.finding = value; });
-      addAiReplyField(entries, sections, ["この箇所の対応目安"], "この箇所の対応目安", photo.recommendation, (value) => { photo.recommendation = value; });
+      if (isPhotoRecommendationEnabled(photo)) {
+        addAiReplyField(
+          entries,
+          sections,
+          ["この箇所の対応方針", "この箇所の対応目安"],
+          "この箇所の対応方針",
+          photo.recommendation,
+          (value) => { photo.recommendation = value; },
+        );
+      }
     } else if (targetType === "finding") {
       const finding = state.findings.find((item) => item.id === targetId);
       if (!finding) return entries;
@@ -3754,6 +3795,7 @@
           findingId: assignedFindingId,
           finding: "",
           recommendation: "",
+          recommendationDisplayMode: "priorityOnly",
           memo: "",
           annotations: [],
         });
@@ -3789,6 +3831,7 @@
   }
 
   async function buildAiConsultationImage(photo) {
+    const includeRecommendation = isPhotoRecommendationEnabled(photo);
     const image = await loadCanvasImage(photo.src);
     const canvas = document.createElement("canvas");
     canvas.width = 1600;
@@ -3802,7 +3845,7 @@
     const photoY = 132 + promptHeight + 30;
     const photoHeight = 620;
     const longFieldY = photoY + photoHeight + 30;
-    const longFieldHeight = 420;
+    const longFieldHeight = includeRecommendation ? 420 : 300;
     canvas.height = longFieldY + longFieldHeight + 42;
     ctx = canvas.getContext("2d");
     if (!ctx) throw new Error("Canvas is not available");
@@ -3886,24 +3929,36 @@
       3,
     );
 
-    drawAiConsultationLongField(
-      ctx,
-      "現在の状態",
-      photo.finding || photo.memo,
-      58,
-      longFieldY,
-      728,
-      longFieldHeight,
-    );
-    drawAiConsultationLongField(
-      ctx,
-      "この箇所の対応目安",
-      photo.recommendation,
-      814,
-      longFieldY,
-      728,
-      longFieldHeight,
-    );
+    if (includeRecommendation) {
+      drawAiConsultationLongField(
+        ctx,
+        "現在の状態",
+        photo.finding || photo.memo,
+        58,
+        longFieldY,
+        728,
+        longFieldHeight,
+      );
+      drawAiConsultationLongField(
+        ctx,
+        "この箇所の対応方針",
+        photo.recommendation,
+        814,
+        longFieldY,
+        728,
+        longFieldHeight,
+      );
+    } else {
+      drawAiConsultationLongField(
+        ctx,
+        "現在の状態",
+        photo.finding || photo.memo,
+        58,
+        longFieldY,
+        1484,
+        longFieldHeight,
+      );
+    }
 
     return canvasToPngBlob(canvas);
   }
@@ -4168,16 +4223,22 @@
   }
 
   function buildPhotoAiPromptText(photo) {
+    const includeRecommendation = isPhotoRecommendationEnabled(photo);
+    const responseHeadings = ["【写真タイトル】", "【撮影箇所】", "【調査結果・判断】", "【現在の状態】"];
+    if (includeRecommendation) responseHeadings.push("【この箇所の対応方針】");
     return (
-      AI_PHOTO_PROMPT +
+      buildPhotoAiPromptInstruction(includeRecommendation) +
       "\n\n【参考情報】\n" +
       `所属する確認項目：${photoFindingName(photo)}\n` +
-      "この情報は写真の文脈を理解するための参考です。回答欄としては追加せず、回答見出しは従来通り次の5項目だけにしてください。\n" +
-      "【写真タイトル】\n【撮影箇所】\n【調査結果・判断】\n【現在の状態】\n【この箇所の対応目安】"
+      `この情報は写真の文脈を理解するための参考です。回答欄としては追加せず、回答見出しは次の${responseHeadings.length}項目だけにしてください。\n` +
+      responseHeadings.join("\n")
     );
   }
 
   function buildPhotoAiConsultationPrompt(photo) {
+    const recommendationSection = isPhotoRecommendationEnabled(photo)
+      ? `\n\n【この箇所の対応方針】\n${safeText(photo.recommendation).trim() || "未入力"}`
+      : "";
     return (
       `【AI相談用プロンプト】\n\n${buildPhotoAiPromptText(photo)}\n\n` +
       "【現在の入力内容】\n" +
@@ -4185,8 +4246,8 @@
       `【写真タイトル】\n${safeText(photo.title).trim() || "未入力"}\n\n` +
       `【撮影箇所】\n${aiConsultationValue(photo.area) || "未入力"}\n\n` +
       `【調査結果・判断】\n${aiConsultationValue(photo.condition) || "未入力"}\n\n` +
-      `【現在の状態】\n${safeText(photo.finding || photo.memo).trim() || "未入力"}\n\n` +
-      `【この箇所の対応目安】\n${safeText(photo.recommendation).trim() || "未入力"}`
+      `【現在の状態】\n${safeText(photo.finding || photo.memo).trim() || "未入力"}` +
+      recommendationSection
     );
   }
 
@@ -4208,6 +4269,11 @@
     return `${text.slice(0, maxLength)}...`;
   }
 
+  function photoRecommendationAiReferenceLine(photo) {
+    if (!shouldShowPhotoRecommendation(photo)) return "";
+    return `この箇所の対応方針：${truncateAiReferenceText(photo.recommendation)}`;
+  }
+
   function buildFindingRelatedPhotoAiReference(finding) {
     const relatedPhotos = state.photos.filter((photo) => photo.findingId === finding.id);
     if (!relatedPhotos.length) {
@@ -4221,8 +4287,8 @@
         `撮影箇所：${valueOrBlank(aiConsultationValue(photo.area))}`,
         `調査結果・判断：${valueOrBlank(aiConsultationValue(photo.condition))}`,
         `現在の状態：${valueOrBlank(photo.finding || photo.memo)}`,
-        `この箇所の対応目安：${valueOrBlank(photo.recommendation)}`,
-      ].join("\n");
+        photoRecommendationAiReferenceLine(photo),
+      ].filter(Boolean).join("\n");
     });
     if (relatedPhotos.length > 5) {
       lines.push(`ほか${relatedPhotos.length - 5}枚の関連写真があります。`);
@@ -4270,8 +4336,8 @@
           `撮影箇所：${valueOrBlank(aiConsultationValue(photo.area))}`,
           `調査結果・判断：${valueOrBlank(aiConsultationValue(photo.condition))}`,
           `現在の状態：${valueOrBlank(photo.finding || photo.memo)}`,
-          `この箇所の対応目安：${valueOrBlank(photo.recommendation)}`,
-        ].join("\n");
+          photoRecommendationAiReferenceLine(photo),
+        ].filter(Boolean).join("\n");
       });
       if (relatedPhotos.length > photosToUse.length) {
         photoLines.push(`ほか${relatedPhotos.length - photosToUse.length}枚の関連写真があります。`);
@@ -4603,8 +4669,8 @@
           `撮影箇所：${valueOrBlank(aiConsultationValue(photo.area))}`,
           `調査結果・判断：${valueOrBlank(aiConsultationValue(photo.condition))}`,
           `現在の状態：${valueOrBlank(photo.finding || photo.memo)}`,
-          `この箇所の対応目安：${valueOrBlank(photo.recommendation)}`,
-        ].join("\n");
+          photoRecommendationAiReferenceLine(photo),
+        ].filter(Boolean).join("\n");
       });
       if (relatedPhotos.length > photosToUse.length) {
         photoLines.push(`ほか${relatedPhotos.length - photosToUse.length}枚の関連写真があります。`);
@@ -5660,7 +5726,9 @@
           ? pdfTextField("photoConditionOther", photo.condition, `写真${index + 1}`)
           : null,
         pdfTextField("photoFinding", photo.finding || photo.memo || "", `写真${index + 1}`),
-        pdfTextField("photoRecommendation", photo.recommendation, `写真${index + 1}`),
+        shouldShowPhotoRecommendation(photo)
+          ? pdfTextField("photoRecommendation", photo.recommendation, `写真${index + 1}`)
+          : null,
       ]),
       pdfTextField("proposalPlanName", state.proposal.planName),
       pdfTextField("proposalRecommendation", state.summary.recommendation),
@@ -6282,6 +6350,9 @@
       photo.findingId = validFindingIds.has(normalizedFindingId) ? normalizedFindingId : "";
       if (!photo.finding && photo.memo) photo.finding = photo.memo;
       if (!photo.recommendation) photo.recommendation = "";
+      if (!photoRecommendationDisplayModes.includes(photo.recommendationDisplayMode)) {
+        photo.recommendationDisplayMode = safeText(photo.recommendation).trim() ? "legacyVisible" : "priorityOnly";
+      }
       photo.area = normalizeOptionText(photo.area);
       photo.condition = normalizePhotoConditionText(photo.condition);
       photo.annotations = normalizeAnnotations(photo.annotations);
