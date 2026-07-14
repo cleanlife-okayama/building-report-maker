@@ -4774,7 +4774,7 @@
       config.ruleKey === "proposalClosing"
         ? "500〜700文字程度を目安に、長くても800文字以内で整えてください。"
         : `${limit}字以内`;
-    const usesBuildingExpertCore = ["additional", "cautions", "watchPoint"].includes(fieldKey);
+    const usesBuildingExpertCore = ["additional", "cautions", "watchPoint", "closing"].includes(fieldKey);
     const commonGuidance = usesBuildingExpertCore ? AI_BUILDING_EXPERT_CORE_GUIDANCE : AI_WRITING_GUIDANCE;
     return (
       "【AI相談用プロンプト】\n\n" +
