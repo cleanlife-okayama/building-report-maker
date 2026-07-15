@@ -53,6 +53,14 @@
   const PHOTO_PRIORITY_REPORT_NOTE = "この箇所は、補修方針を考えるうえで優先して確認したい写真です。";
   const FINDING_PHOTO_REPORT_SECTION_TITLE = "1. 調査写真・確認項目ごとの確認結果";
   const SUMMARY_JUDGMENT_TITLE = "今回の調査結果にもとづく総合判断";
+  const SUMMARY_JUDGMENT_FIELD_LABEL = "建物全体としての総合判断";
+  const SUMMARY_JUDGMENT_OPTIONS = [
+    "現時点では工事不要",
+    "経過確認が必要",
+    "詳しい確認後に判断",
+    "早めの対応が適切",
+    "直ちに対応が必要",
+  ];
   const SUMMARY_AI_REPLY_HEADINGS = [SUMMARY_JUDGMENT_TITLE, "全体まとめ", "全体のまとめ", "現在の全体まとめ"];
   const projectOptions = ["外壁塗装", "屋根塗装", "防水工事", "雨漏り確認", "美装・補修", "リフォーム", "節電ガラスコート", "その他"];
   const buildingTypeOptions = ["戸建て", "アパート", "店舗", "倉庫", "事務所", "その他"];
@@ -357,6 +365,7 @@
       purpose: "外壁と屋根まわりの状態確認",
     },
     summary: {
+      judgment: "",
       overall: "確認した範囲では、外壁の一部に色あせと細かなひびが見られます。すぐに大きな問題になるとは限りませんが、今後の傷みを抑えるために早めの対処を検討しておくと安心です。",
       customerConcern: "雨漏りや外壁の傷みが進まないか心配されていました。",
       recommendation: "現時点では、外壁塗装とシーリング（目地の防水材）まわりの補修を中心に検討する内容が分かりやすいと考えられます。",
@@ -703,6 +712,14 @@
         metric("写真", `${state.photos.length}枚`),
       ]),
       el("div", { className: "form-grid", style: "margin-top:12px" }, [
+        el("div", { className: "field full" }, [
+          el("label", { text: SUMMARY_JUDGMENT_FIELD_LABEL }),
+          selectInline(state.summary.judgment, SUMMARY_JUDGMENT_OPTIONS, (value) => update("summary.judgment", value)),
+        ]),
+        el("p", {
+          className: "assessment-input-note",
+          text: "最も強い1箇所の状態ではなく、建物全体として選択してください。部分的に異なる判断は、下の文章で補足します。判断区分を変更した場合は、総合判断の文章も内容をご確認ください。",
+        }),
         textareaField(SUMMARY_JUDGMENT_TITLE, state.summary.overall, (v) => update("summary.overall", v), "full", undefined, textLimit("summaryOverall")),
       ]),
     ], el("div", { className: "panel-action-row" }, [
@@ -2101,7 +2118,9 @@
           : "",
         reportSection(`5. ${SUMMARY_JUDGMENT_TITLE}`, [
           el("div", { className: "report-box" }, [
-            el("span", { className: "report-section-label", text: "総合判断" }),
+            state.summary.judgment
+              ? el("span", { className: "report-section-label", text: `判断区分：${state.summary.judgment}` })
+              : "",
             el("p", { className: "report-copy", text: safeText(state.summary.overall || state.proposal.totalOpinion) }),
           ]),
         ], "text-section"),
@@ -2664,6 +2683,7 @@
     recommendValue(state.project.weather, "基本情報", "天気");
 
     requireValue(state.summary.customerConcern, "ご相談内容", "お客様のご不安・ご相談内容");
+    recommendValue(state.summary.judgment, "総合判断", SUMMARY_JUDGMENT_FIELD_LABEL);
     requireValue(state.summary.overall, "総合判断", SUMMARY_JUDGMENT_TITLE);
     requireValue(state.summary.recommendation, "施工方針", "おすすめする施工方針");
     requireValue(state.proposal.scope, "施工方針", "主な工事内容");
@@ -4999,13 +5019,28 @@
       );
     }
 
+    const summaryJudgmentGuidance = {
+      "現時点では工事不要":
+        "前半で、建物全体として工事を急ぐ必要がないことを伝えてください。入力にない将来の工事を勧めず、必要な場合だけ定期確認や部分的な注意箇所を補足してください。",
+      "経過確認が必要":
+        "前半で、建物全体の状態を継続して確認する必要があることを伝えてください。確認する箇所や変化を見る点を補足し、工事が必要とは断定しないでください。",
+      "詳しい確認後に判断":
+        "現時点の確認範囲では工事の必要・不要を確定せず、追加確認が必要な箇所とその理由を示してください。AIが結論を補完しないでください。",
+      "早めの対応が適切":
+        "建物全体として対応時期を早めに計画することを伝え、優先箇所と理由を示してください。速やかな緊急対応が必要という結論へ勝手に強めないでください。",
+      "直ちに対応が必要":
+        "建物全体として速やかな詳しい確認と対応が必要であることを伝え、優先箇所と理由を示してください。入力にない危険性や被害を作らないでください。",
+    }[state.summary.judgment] || "";
     return (
       commonStart +
+      "【担当者が選択した建物全体の総合判断】\n" +
+      `${valueOrBlank(state.summary.judgment)}\n\n` +
       `「${SUMMARY_JUDGMENT_TITLE}」は施工内容を説明する欄ではありません。結局、この建物を今どう判断すればよいのかを、担当者の入力・選択内容にもとづいて整理してください。\n` +
-      "文章の前半で建物全体としての結論を示し、続けて、対応時期、優先して確認・対応する箇所、その判断に至った主な理由が分かるようにしてください。\n" +
-      "結論は入力内容に応じて、「現時点では工事不要」「経過確認が必要」「詳しい確認後に判断」「早めの対応が適切」「直ちに対応が必要」の考え方から、根拠に合うものを使用してください。判断材料が不足している場合は、無理に工事の必要性を決めず、「詳しい確認後に判断」または「現時点の確認範囲では判断できない」としてください。\n" +
-      "建物全体の判断と、一部の優先箇所の判断は分けてください。一部に対応が必要な箇所があっても建物全体を同じ緊急度へ広げず、反対に、優先して伝えるべき箇所を全体の中へ埋もれさせないでください。\n" +
-      "確認項目の現在の状態・今後の対応、写真の調査結果・判断、目安の6評価値と説明に矛盾させないでください。AIが新しい診断、緊急度、危険性、原因、内部状態、将来被害を作り足さないでください。\n" +
+      "この選択値は、担当者が決定した建物全体の総合結論です。AIは変更、再判定、格上げ、格下げをせず、文章の前半で選択値と同じ結論を明確に伝えてください。選択値は原則としてそのまま使用し、自然な文章にするための助詞や語尾だけを整えてください。\n" +
+      `${summaryJudgmentGuidance}\n` +
+      "続けて、対応時期、優先して確認・対応する箇所、その判断に至った主な理由が分かるようにしてください。\n" +
+      "確認項目、写真、目安に別の強さの判断があっても、建物全体の選択値を自動変更しないでください。建物全体と一部箇所の判断を分け、部分的に異なる判断は例外または優先箇所として明確に補足してください。強い個別判断を都合よく省略せず、軽い項目が多いことを理由に選択値を弱めないでください。\n" +
+      "AIが新しい診断、緊急度、危険性、原因、内部状態、将来被害を作り足さないでください。\n" +
       "具体的な材料名、製品名、工法、施工手順、工事項目の列挙、施工方針の言い換え、見積金額、保証内容は書かないでください。施工方針は矛盾防止の参考に限り、総合判断の文章として要約・転載しないでください。\n\n" +
       "【現在の入力内容】\n" +
       `${SUMMARY_JUDGMENT_TITLE}：${valueOrBlank(state.summary.overall)}\n` +
@@ -5018,6 +5053,10 @@
   }
 
   async function copyReportSectionAiPrompt(sectionKey) {
+    if (sectionKey === "summary" && !SUMMARY_JUDGMENT_OPTIONS.includes(state.summary.judgment)) {
+      window.alert(`先に「${SUMMARY_JUDGMENT_FIELD_LABEL}」を選択してください。`);
+      return;
+    }
     if (!hasReportSectionAiMaterial(sectionKey)) {
       const labels = {
         concern: "ご相談内容",
@@ -6584,6 +6623,7 @@
       purpose: "",
     });
     Object.assign(target.summary, {
+      judgment: "",
       overall: "",
       customerConcern: "",
       recommendation: "",
@@ -6665,6 +6705,9 @@
     delete target.project.siteName;
     if (!target.project.surveyTime) target.project.surveyTime = "";
     target.summary = target.summary || {};
+    target.summary.judgment = SUMMARY_JUDGMENT_OPTIONS.includes(safeText(target.summary.judgment).trim())
+      ? safeText(target.summary.judgment).trim()
+      : "";
     if (target.summary.nextAction) {
       target.summary.additionalRecommendations = target.summary.nextAction;
     }
