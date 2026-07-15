@@ -61,6 +61,17 @@
     "早めの対応が適切",
     "直ちに対応が必要",
   ];
+  const SUMMARY_JUDGMENT_GAP_RULES = {
+    "現時点では工事不要": {
+      findingPriorities: ["high", "urgent"],
+      photoConditions: ["早めの対応が必要", "直ちに対応が必要"],
+    },
+    "経過確認が必要": {
+      findingPriorities: ["urgent"],
+      photoConditions: ["直ちに対応が必要"],
+    },
+  };
+  const SUMMARY_JUDGMENT_GAP_WARNING_LIMIT = 3;
   const SUMMARY_AI_REPLY_HEADINGS = [SUMMARY_JUDGMENT_TITLE, "全体まとめ", "全体のまとめ", "現在の全体まとめ"];
   const projectOptions = ["外壁塗装", "屋根塗装", "防水工事", "雨漏り確認", "美装・補修", "リフォーム", "節電ガラスコート", "その他"];
   const buildingTypeOptions = ["戸建て", "アパート", "店舗", "倉庫", "事務所", "その他"];
@@ -704,6 +715,18 @@
     ], button("ご相談内容をAIで整える", "btn small section-ai-button", () => copyReportSectionAiPrompt("concern")));
   }
 
+  function renderSummaryJudgmentGapWarning() {
+    const warnings = collectSummaryJudgmentGapWarnings();
+    if (!warnings.length) return "";
+    const preview = summarizeSummaryJudgmentGapWarnings(warnings);
+    return el("div", { className: "assessment-input-note company-change-notice" }, [
+      el("strong", { text: summaryJudgmentGapWarningLead(warnings[0].summaryJudgment) }),
+      el("p", { text: "建物全体の判断区分と、個別箇所の扱いをご確認ください。選択値は自動では変更されません。" }),
+      ...preview.visibleItems.map((warning) => el("p", { text: `・${warning.label}` })),
+      preview.remainingCount ? el("p", { text: `ほか${preview.remainingCount}件` }) : "",
+    ]);
+  }
+
   function renderSummaryPanel() {
     return panel(`6. ${SUMMARY_JUDGMENT_TITLE}`, [
       el("div", { className: "summary-strip" }, [
@@ -716,6 +739,7 @@
           el("label", { text: SUMMARY_JUDGMENT_FIELD_LABEL }),
           selectInline(state.summary.judgment, SUMMARY_JUDGMENT_OPTIONS, (value) => update("summary.judgment", value)),
         ]),
+        renderSummaryJudgmentGapWarning(),
         el("p", {
           className: "assessment-input-note",
           text: "最も強い1箇所の状態ではなく、建物全体として選択してください。部分的に異なる判断は、下の文章で補足します。判断区分を変更した場合は、総合判断の文章も内容をご確認ください。",
@@ -2684,6 +2708,18 @@
 
     requireValue(state.summary.customerConcern, "ご相談内容", "お客様のご不安・ご相談内容");
     recommendValue(state.summary.judgment, "総合判断", SUMMARY_JUDGMENT_FIELD_LABEL);
+    const summaryGapWarnings = collectSummaryJudgmentGapWarnings();
+    if (summaryGapWarnings.length) {
+      const preview = summarizeSummaryJudgmentGapWarnings(summaryGapWarnings);
+      const labels = preview.visibleItems.map((warning) => warning.label).join("、");
+      const remaining = preview.remainingCount ? `、ほか${preview.remainingCount}件` : "";
+      add(
+        "recommended",
+        "総合判断",
+        "総合判断区分と個別判断の確認",
+        `${summaryJudgmentGapWarningLead(summaryGapWarnings[0].summaryJudgment)} ${labels}${remaining}。建物全体の判断区分と、個別箇所の扱いをご確認ください。`,
+      );
+    }
     requireValue(state.summary.overall, "総合判断", SUMMARY_JUDGMENT_TITLE);
     requireValue(state.summary.recommendation, "施工方針", "おすすめする施工方針");
     requireValue(state.proposal.scope, "施工方針", "主な工事内容");
@@ -3198,6 +3234,98 @@
   function priorityLabel(value) {
     const option = priorities.find((item) => item.value === value);
     return option ? option.label : value;
+  }
+
+  function collectSummaryJudgmentGapWarnings(source = state) {
+    const summaryJudgment = safeText(source?.summary?.judgment).trim();
+    const rule = SUMMARY_JUDGMENT_GAP_RULES[summaryJudgment];
+    if (!rule) return [];
+
+    const findings = Array.isArray(source?.findings) ? source.findings : [];
+    const photos = Array.isArray(source?.photos) ? source.photos : [];
+    const findingById = new Map();
+    const warnings = [];
+    const seen = new Set();
+    const addWarning = (warning) => {
+      const key = `${warning.sourceType}:${warning.sourceId}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      warnings.push(warning);
+    };
+    const warningCode = (sourceType, individualJudgment) => {
+      const summaryCode = summaryJudgment === "現時点では工事不要" ? "no-work" : "monitor";
+      const individualCode = individualJudgment === "直ちに対応が必要" ? "urgent" : "early";
+      return `${summaryCode}-${sourceType}-${individualCode}`;
+    };
+
+    findings.forEach((finding, index) => {
+      const findingId = safeText(finding?.id).trim();
+      if (findingId && !findingById.has(findingId)) findingById.set(findingId, finding);
+
+      const normalizedPriority = normalizePriority(finding?.priority);
+      if (!rule.findingPriorities.includes(normalizedPriority)) return;
+      const sourceId = findingId || `index-${index + 1}`;
+      const findingName = safeText(finding?.area).trim() || `確認項目${index + 1}`;
+      const individualJudgment = priorityLabel(normalizedPriority);
+      addWarning({
+        code: warningCode("finding", individualJudgment),
+        summaryJudgment,
+        individualJudgment,
+        sourceType: "finding",
+        sourceId,
+        findingId,
+        findingName,
+        label: `確認項目「${findingName}」：${individualJudgment}`,
+      });
+    });
+
+    photos.forEach((photo, index) => {
+      const individualJudgment = normalizePhotoConditionText(photo?.condition);
+      if (!rule.photoConditions.includes(individualJudgment)) return;
+
+      const photoId = safeText(photo?.id).trim();
+      const sourceId = photoId || `index-${index + 1}`;
+      const findingId = safeText(photo?.findingId).trim();
+      const relatedFinding = findingId ? findingById.get(findingId) : null;
+      const findingName = safeText(relatedFinding?.area).trim();
+      const photoTitle = safeText(photo?.title).trim();
+      const photoArea = safeText(photo?.area).trim();
+      const fallbackTitle = findingName || `未分類写真${index + 1}`;
+      const displayTitle = photoTitle || photoArea || fallbackTitle;
+      const contextName = findingName && findingName !== displayTitle
+        ? findingName
+        : !findingName && displayTitle !== fallbackTitle
+          ? "未分類"
+          : "";
+      addWarning({
+        code: warningCode("photo", individualJudgment),
+        summaryJudgment,
+        individualJudgment,
+        sourceType: "photo",
+        sourceId,
+        findingId,
+        findingName: findingName || "未分類",
+        photoTitle,
+        area: photoArea,
+        label: `写真「${displayTitle}」${contextName ? `（${contextName}）` : ""}：${individualJudgment}`,
+      });
+    });
+
+    return warnings;
+  }
+
+  function summarizeSummaryJudgmentGapWarnings(warnings) {
+    const items = Array.isArray(warnings) ? warnings : [];
+    return {
+      visibleItems: items.slice(0, SUMMARY_JUDGMENT_GAP_WARNING_LIMIT),
+      remainingCount: Math.max(0, items.length - SUMMARY_JUDGMENT_GAP_WARNING_LIMIT),
+    };
+  }
+
+  function summaryJudgmentGapWarningLead(summaryJudgment) {
+    return summaryJudgment === "現時点では工事不要"
+      ? "総合判断は「現時点では工事不要」ですが、早めまたは直ちに対応が必要とされた個別箇所があります。"
+      : "総合判断は「経過確認が必要」ですが、直ちに対応が必要とされた個別箇所があります。";
   }
 
   function assessmentLevelLabel(value) {
