@@ -52,6 +52,8 @@
   const PHOTO_PRIORITY_REPORT_TITLE = "特に確認しておきたい写真";
   const PHOTO_PRIORITY_REPORT_NOTE = "この箇所は、補修方針を考えるうえで優先して確認したい写真です。";
   const FINDING_PHOTO_REPORT_SECTION_TITLE = "1. 調査写真・確認項目ごとの確認結果";
+  const SUMMARY_JUDGMENT_TITLE = "今回の調査結果にもとづく総合判断";
+  const SUMMARY_AI_REPLY_HEADINGS = [SUMMARY_JUDGMENT_TITLE, "全体まとめ", "全体のまとめ", "現在の全体まとめ"];
   const projectOptions = ["外壁塗装", "屋根塗装", "防水工事", "雨漏り確認", "美装・補修", "リフォーム", "節電ガラスコート", "その他"];
   const buildingTypeOptions = ["戸建て", "アパート", "店舗", "倉庫", "事務所", "その他"];
   const surveyTimeOptions = createTimeOptions();
@@ -62,7 +64,7 @@
     { id: "section-photos", label: "調査写真" },
     { id: "section-assessment", label: "目安" },
     { id: "section-proposal", label: "施工方針" },
-    { id: "section-summary", label: "まとめ" },
+    { id: "section-summary", label: "総合判断" },
     { id: "section-quality", label: "入力チェック" },
     { id: "section-data", label: "保存" },
     { id: "section-company", label: "会社情報" },
@@ -230,7 +232,7 @@
     processStepTitle: { label: "工程名", maxLength: 20, warningRatio: 0.85 },
     processStepNote: { label: "補足説明", maxLength: 80, warningRatio: 0.85 },
     processDivider: { label: "区切り文", maxLength: 80, warningRatio: 0.85 },
-    summaryOverall: { label: "全体のまとめ", maxLength: 300, warningRatio: 0.85 },
+    summaryOverall: { label: SUMMARY_JUDGMENT_TITLE, maxLength: 300, warningRatio: 0.85 },
   };
   const processDiagramTemplates = [
     {
@@ -284,8 +286,8 @@
     調査目的: "例：外壁と屋根まわりの状態確認",
     "お客様のご不安・ご相談内容":
       "お客様が気にされていることや、ご希望を書いてください。\n例：雨漏りはしていないが、サビが出ているため今後が心配。\n箇条書きでもOKです。AIが自然な文章へ整えます。",
-    全体のまとめ:
-      "今回の調査結果とおすすめの方向性をまとめてください。\nお客様が「結局どう考えればよいか」が分かる内容にすると伝わりやすくなります。",
+    [SUMMARY_JUDGMENT_TITLE]:
+      "工事の必要性または判断保留、対応時期、優先箇所、その判断理由をまとめてください。\n具体的な材料、工法、施工手順は施工方針側へ分けます。",
     確認した内容:
       "見たままをできるだけ詳しく書いてください。\n箇条書きでもOKです。\n例：床面に濡れあり、タイルの浮き・割れあり、端部にサビあり。",
     "考えられること・注意点":
@@ -694,17 +696,17 @@
   }
 
   function renderSummaryPanel() {
-    return panel("6. 全体まとめ", [
+    return panel(`6. ${SUMMARY_JUDGMENT_TITLE}`, [
       el("div", { className: "summary-strip" }, [
         metric("確認項目", `${state.findings.length}件`),
         metric("早めの対応が必要", `${state.findings.filter((item) => ["high", "urgent"].includes(item.priority)).length}件`),
         metric("写真", `${state.photos.length}枚`),
       ]),
       el("div", { className: "form-grid", style: "margin-top:12px" }, [
-        textareaField("全体のまとめ", state.summary.overall, (v) => update("summary.overall", v), "full", undefined, textLimit("summaryOverall")),
+        textareaField(SUMMARY_JUDGMENT_TITLE, state.summary.overall, (v) => update("summary.overall", v), "full", undefined, textLimit("summaryOverall")),
       ]),
     ], el("div", { className: "panel-action-row" }, [
-      button("全体のまとめをAIで整える", "btn small section-ai-button", () => copyReportSectionAiPrompt("summary")),
+      button("総合判断をAIで整える", "btn small section-ai-button", () => copyReportSectionAiPrompt("summary")),
       button("AI回答を貼り戻す", "btn small", () => openAiReplyImportDialog("summary")),
     ]));
   }
@@ -2097,9 +2099,9 @@
               ]),
             ], "text-section attention-section")
           : "",
-        reportSection("5. 全体まとめ", [
+        reportSection(`5. ${SUMMARY_JUDGMENT_TITLE}`, [
           el("div", { className: "report-box" }, [
-            el("span", { className: "report-section-label", text: "総合所見" }),
+            el("span", { className: "report-section-label", text: "総合判断" }),
             el("p", { className: "report-copy", text: safeText(state.summary.overall || state.proposal.totalOpinion) }),
           ]),
         ], "text-section"),
@@ -2662,7 +2664,7 @@
     recommendValue(state.project.weather, "基本情報", "天気");
 
     requireValue(state.summary.customerConcern, "ご相談内容", "お客様のご不安・ご相談内容");
-    requireValue(state.summary.overall, "全体まとめ", "全体のまとめ");
+    requireValue(state.summary.overall, "総合判断", SUMMARY_JUDGMENT_TITLE);
     requireValue(state.summary.recommendation, "施工方針", "おすすめする施工方針");
     requireValue(state.proposal.scope, "施工方針", "主な工事内容");
     requireValue(state.proposal.closing, "施工方針", "最後にお伝えしたいこと");
@@ -3419,7 +3421,7 @@
       finding: "確認項目へAI回答を貼り戻す",
       assessment: "目安へAI回答を貼り戻す",
       proposal: "施工方針へAI回答を貼り戻す",
-      summary: "全体まとめへAI回答を貼り戻す",
+      summary: `${SUMMARY_JUDGMENT_TITLE}へAI回答を貼り戻す`,
     };
     const textarea = el("textarea", {
       className: "ai-reply-import-textarea",
@@ -3526,7 +3528,7 @@
         "今後注意しておきたい点",
         "最後にお伝えしたいこと",
       ],
-      summary: ["全体のまとめ"],
+      summary: [SUMMARY_JUDGMENT_TITLE],
     }[targetType] || [];
     const found = new Set(
       entries.map((entry) => safeText(entry.label).split("：")[0].trim()).filter(Boolean),
@@ -3583,7 +3585,7 @@
       addAiReplyField(entries, sections, ["今後注意しておきたい点"], "今後注意しておきたい点", state.proposal.watchPoint, (value) => { state.proposal.watchPoint = value; });
       addAiReplyField(entries, sections, ["最後にお伝えしたいこと"], "最後にお伝えしたいこと", state.proposal.closing, (value) => { state.proposal.closing = value; });
     } else if (targetType === "summary") {
-      addAiReplyField(entries, sections, ["全体のまとめ", "現在の全体まとめ"], "全体のまとめ", state.summary.overall, (value) => { state.summary.overall = value; });
+      addAiReplyField(entries, sections, SUMMARY_AI_REPLY_HEADINGS, SUMMARY_JUDGMENT_TITLE, state.summary.overall, (value) => { state.summary.overall = value; });
     }
     return entries;
   }
@@ -4902,17 +4904,32 @@
     if (referenceFindings.length > maxFindings) {
       findingBlocks.push(`ほか${referenceFindings.length - maxFindings}件の確認項目があります。`);
     }
+    const assessmentBlocks = (state.assessment.items || []).map((item) =>
+      [
+        `評価項目：${valueOrBlank(item.label)}`,
+        `選択値：${item.value ? `目安${item.value}` : "未入力"}`,
+        `説明：${valueOrBlank(item.displayText)}`,
+      ].join("\n"),
+    );
+    const assessmentReference = [
+      assessmentBlocks.length ? assessmentBlocks.join("\n\n") : "6評価値：未入力",
+      `総合目安：${valueOrBlank(state.assessment.overall)}`,
+      `緊急性について：${valueOrBlank(state.assessment.urgency)}`,
+      `おすすめの方向性：${valueOrBlank(state.assessment.policy)}`,
+    ].join("\n\n");
     return (
-      "【全体まとめ用の参考情報】\n" +
-      "以下は、全体まとめを整えるための参考情報です。確認項目、関連写真、施工方針の内容を踏まえてください。ただし、回答見出しは増やさず、全体まとめの回答形式だけで返してください。\n\n" +
-      "【施工方針の入力内容】\n" +
-      `ご提案内容：${valueOrBlank(state.proposal.planName)}\n` +
-      `おすすめする施工方針：${valueOrBlank(state.summary.recommendation)}\n` +
-      `主な工事内容：${valueOrBlank(state.proposal.scope)}\n\n` +
-      "【確認項目・関連写真の参考情報】\n" +
+      `【${SUMMARY_JUDGMENT_TITLE}用の参考情報】\n` +
+      "確認項目・関連写真と、今回の確認結果にもとづく目安を主な判断材料にしてください。施工方針は矛盾を防ぐための参考に限り、内容を要約・転載しないでください。回答見出しは増やさず、総合判断の回答形式だけで返してください。\n\n" +
+      "【主な判断材料1：確認項目・関連写真】\n" +
       (findingBlocks.length
         ? findingBlocks.join("\n\n")
-        : "全体まとめAIの参考情報に含める入力済みの確認項目や関連写真はまだありません。")
+        : "総合判断AIの参考情報に含める入力済みの確認項目や関連写真はまだありません。") +
+      "\n\n【主な判断材料2：今回の確認結果にもとづく目安】\n" +
+      assessmentReference +
+      "\n\n【施工方針（矛盾防止の参考）】\n" +
+      "以下は総合判断との矛盾を防ぐためだけに参照し、具体的な工事内容として要約・転載しないでください。\n" +
+      `ご提案内容：${valueOrBlank(state.proposal.planName)}\n` +
+      `おすすめする施工方針：${valueOrBlank(state.summary.recommendation)}`
     );
   }
 
@@ -4984,13 +5001,18 @@
 
     return (
       commonStart +
-      "入力済みの全体まとめを、今回分かったこと、心配な点、対応の方向性が自然につながる文章へ整えてください。入力内容にない判断や提案は追加しないでください。\n\n" +
+      `「${SUMMARY_JUDGMENT_TITLE}」は施工内容を説明する欄ではありません。結局、この建物を今どう判断すればよいのかを、担当者の入力・選択内容にもとづいて整理してください。\n` +
+      "文章の前半で建物全体としての結論を示し、続けて、対応時期、優先して確認・対応する箇所、その判断に至った主な理由が分かるようにしてください。\n" +
+      "結論は入力内容に応じて、「現時点では工事不要」「経過確認が必要」「詳しい確認後に判断」「早めの対応が適切」「直ちに対応が必要」の考え方から、根拠に合うものを使用してください。判断材料が不足している場合は、無理に工事の必要性を決めず、「詳しい確認後に判断」または「現時点の確認範囲では判断できない」としてください。\n" +
+      "建物全体の判断と、一部の優先箇所の判断は分けてください。一部に対応が必要な箇所があっても建物全体を同じ緊急度へ広げず、反対に、優先して伝えるべき箇所を全体の中へ埋もれさせないでください。\n" +
+      "確認項目の現在の状態・今後の対応、写真の調査結果・判断、目安の6評価値と説明に矛盾させないでください。AIが新しい診断、緊急度、危険性、原因、内部状態、将来被害を作り足さないでください。\n" +
+      "具体的な材料名、製品名、工法、施工手順、工事項目の列挙、施工方針の言い換え、見積金額、保証内容は書かないでください。施工方針は矛盾防止の参考に限り、総合判断の文章として要約・転載しないでください。\n\n" +
       "【現在の入力内容】\n" +
-      `全体のまとめ：${valueOrBlank(state.summary.overall)}\n` +
+      `${SUMMARY_JUDGMENT_TITLE}：${valueOrBlank(state.summary.overall)}\n` +
       "\n\n【回答形式】\n回答は次の見出しだけにしてください。ほかの見出し、前置き、感想、解説、総評は書かないでください。\n\n" +
-      "【全体のまとめ】\n本文\n\n" +
-      "【文字数の目安】\n【全体のまとめ】300字以内\n" +
-      "文字数目安内で、確認結果、心配な点、対応の方向性と安心材料を省略しすぎず、自然につなげてください。\n\n" +
+      `【${SUMMARY_JUDGMENT_TITLE}】\n本文\n\n` +
+      `【文字数の目安】\n【${SUMMARY_JUDGMENT_TITLE}】300字以内\n` +
+      "無理に300字近くまで増やさず、工事の必要性または判断保留、対応時期、優先箇所、判断理由が明確に伝わる文章量を優先してください。\n\n" +
       AI_OUTPUT_SAFETY_GUIDANCE
     );
   }
@@ -5000,7 +5022,7 @@
       const labels = {
         concern: "ご相談内容",
         assessment: "今回の確認結果にもとづく目安",
-        summary: "全体まとめ",
+        summary: SUMMARY_JUDGMENT_TITLE,
       };
       window.alert(
         `先に「${labels[sectionKey] || "対象項目"}」を入力してください。\n` +
@@ -5011,7 +5033,7 @@
     const labels = {
       concern: "ご相談内容",
       assessment: "目安",
-      summary: "全体まとめ",
+      summary: "総合判断",
     };
     const label = labels[sectionKey] || "対象項目";
     const prompt =
@@ -6414,8 +6436,8 @@
     return [
       {
         ok: state.summary.overall.trim().length >= 24,
-        title: "全体まとめ",
-        message: "最後に読むまとめとして、確認内容と対応の考え方が分かる文章になっているかを確認します。",
+        title: SUMMARY_JUDGMENT_TITLE,
+        message: "工事の必要性または判断保留、対応時期、優先箇所、その判断理由が分かる文章になっているかを確認します。",
       },
       {
         ok: state.findings.length > 0,
