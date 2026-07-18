@@ -1,3 +1,138 @@
+# CL Field Report AI
+
+**AI explains. Professionals decide.**
+
+**Live demo:** *to be added*
+
+**Demo video:** *to be added*
+
+**Prototype language:** Japanese UI with English README guidance and English-captioned demo video
+
+CL Field Report AI is a human-in-the-loop reporting tool for small painting, waterproofing, roofing, and remodeling contractors. It turns field-verified findings, photos, notes, and professional decisions into clear, customer-ready reports—without allowing AI to change the ratings or overall judgment selected by the professional.
+
+## Problem
+
+Skilled contractors often understand the condition of a building through experience, photos, and on-site judgment. But small companies do not always have a clear way to turn that knowledge into words and documents that customers can understand and trust.
+
+When the only deliverable is an estimate, the conversation can easily become a price comparison. This tool is designed for small teams that cannot assign a dedicated report writer or IT department, but still want to explain their work honestly and clearly.
+
+## Solution
+
+The app connects photos, inspection items, recommended actions, overall judgment, preview, and PDF output in one local workflow.
+
+AI is used to make explanations clearer. It does not make the final diagnosis. The selected ratings and the overall judgment remain controlled by the professional user.
+
+For specific combinations of selected item-level findings and the overall judgment, the app displays a rule-based warning and asks the professional to review the decision.
+
+## What Existed Before Build Week
+
+Baseline commit: `2ffd642`
+
+Before Build Week, the app already included:
+
+- A local HTML/CSS/JavaScript field report app
+- Photo upload, sorting, preview, and print/PDF output
+- Inspection items with condition and action choices
+- Customer-facing report sections for findings and recommendations
+- Local browser storage using `localStorage` and `IndexedDB`
+- Company information settings
+- AI consultation prompts for rewriting report text
+
+## What Was Added During Build Week
+
+From `2ffd642` to `24409da`, the project was improved in several areas:
+
+- Passing multiple related photos into the inspection-item AI prompt
+- Shared AI rules for safer, customer-friendly writing
+- Protection so AI paste-back does not overwrite the six human-selected assessment values
+- Redefining the overall judgment as a five-choice human decision
+- Keeping the overall judgment fixed when AI text is pasted back
+- Rule-based warnings for selected item-level findings that may not match the selected overall judgment
+- Explicit photo placement: unclassified, building overview, or inspection item
+- Building overview photos placed after the summary assessment and before detailed inspection items
+- Safer save, restore, JSON, and PDF-related behavior
+
+## How GPT-5.6 Was Used
+
+This prototype does not call the OpenAI API directly.
+
+Instead, the app creates a structured consultation prompt from photos and professional input. The user reviews what will be sent, then gives it to GPT-5.6. GPT-5.6 rewrites the information into customer-friendly language.
+
+The user then reviews the answer and pastes it back into the app. If a field already has content, the app asks before overwriting it. AI responses are not accepted automatically, and selected ratings and the overall judgment are not changed by AI paste-back.
+
+This manual step is intentional: it keeps a visible human review step and makes the workflow human-in-the-loop, not automatic diagnosis.
+
+The app does not automatically upload report data. The user chooses what to send to GPT-5.6.
+
+## How Codex Was Used
+
+Codex was used as a development partner during Build Week. It investigated Git history and existing code, checked the impact of changes on saved data and older JSON files, implemented focused changes, and tested syntax, diffs, save/load behavior, JSON, PDF output, and report order.
+
+One concrete example was the photo placement feature. The field user noticed that treating unclassified photos as building overview photos was a hidden behavior that first-time users might not understand. GPT-5.6 helped turn that UX concern into minimum requirements. Codex then checked the existing code, storage format, and backward compatibility, backed up the files before and after implementation, implemented the change, and tested saving, JSON, PDF, display order, duplicate prevention, and compatibility with Playwright. The human product owner reviewed the real screen and PDF output before accepting it.
+
+## Human Decisions
+
+The key product and safety decisions were made by the human product owner, a working renovation contractor.
+
+These included:
+
+- Choosing the real field problem to solve
+- Deciding that AI must not change selected ratings or the overall judgment
+- Finding UX problems that first-time users might misunderstand
+- Keeping the report honest, including when some work may not be necessary
+- Reviewing the actual screen and deciding what to adopt or reject
+
+## Real-World Pilot
+
+The tool was used in one real residential inspection pilot.
+
+The customer said the report was polished enough to use in an internal company meeting.
+
+The contractor also explained that the Galvalume-coated steel roof might not need repainting. Even so, the customer requested a roof estimate and said they were currently leaning toward hiring the contractor.
+
+This is one pilot case and does not guarantee general business results.
+
+## Privacy and Safety
+
+- Photos and report data are stored mainly in the user's browser.
+- The app does not automatically send data to GPT-5.6.
+- The user chooses what content to send.
+- AI responses are not accepted automatically.
+- Public demos should use anonymized data.
+- This app does not provide formal structural diagnosis or certified inspection results.
+- Final responsibility stays with the professional user.
+
+## Run and Test
+
+- No installation or build step is required.
+- No backend server is required.
+- Open `index.html` in a browser, or serve this folder as a static site.
+- Recommended browser: latest Google Chrome or Microsoft Edge, especially for folder save, clipboard, and browser storage features.
+- The app uses `localStorage` for text data and `IndexedDB` for photo data.
+- A separate sample data file is not required to run the app. For review, prepare anonymized photos and notes, or use the demo video.
+
+Fast test path for reviewers:
+
+1. Open the app.
+2. Add one or more photos.
+3. Choose each photo's placement: unclassified, building overview, or inspection item.
+4. Enter an inspection item and select item-level findings.
+5. Select the six assessment values and the overall judgment as the professional user.
+6. Copy an AI consultation prompt.
+7. Send the reviewed prompt to GPT-5.6.
+8. Paste the GPT-5.6 response back into the app.
+9. Confirm that selected ratings and the overall judgment do not change.
+10. Check the rule-based warning when item-level findings may not match the overall judgment.
+11. Open the preview or print/PDF view.
+
+## Evidence
+
+- Baseline commit: `2ffd642`
+- Build Week feature milestone: `24409da`
+- Demo video: *to be added*
+
+---
+
 # 建物調査報告書アプリ
 
 現場で確認した内容、写真、現在の状態、提案内容を入力し、お客様向けの建物調査報告書として確認・印刷できるローカルHTMLアプリです。
