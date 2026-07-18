@@ -49,6 +49,8 @@
   const photoConditionOptions = ["目立った問題なし", "今後の経過確認が必要", "詳しい確認が必要", "劣化の兆候あり", "劣化が進行している", "不具合を確認", "早めの対応が必要", "直ちに対応が必要"];
   const photoPriorityConditions = ["早めの対応が必要", "直ちに対応が必要"];
   const photoRecommendationDisplayModes = ["priorityOnly", "legacyVisible"];
+  const PHOTO_REPORT_PLACEMENT_OVERVIEW = "overview";
+  const PHOTO_REPORT_OVERVIEW_TITLE = "建物全景・全体写真";
   const PHOTO_PRIORITY_REPORT_TITLE = "特に確認しておきたい写真";
   const PHOTO_PRIORITY_REPORT_NOTE = "この箇所は、補修方針を考えるうえで優先して確認したい写真です。";
   const FINDING_PHOTO_REPORT_SECTION_TITLE = "1. 調査写真・確認項目ごとの確認結果";
@@ -841,14 +843,15 @@
   }
 
   function renderFindingRelatedPhotos(finding) {
-    const relatedPhotos = state.photos.filter((photo) => photo.findingId === finding.id);
+    const relatedPhotos = state.photos.filter((photo) => isFindingRelatedPhoto(photo, finding.id));
     return el("div", { className: "finding-related-photos" }, [
       el("div", { className: "finding-related-photos-header" }, [
         el("strong", { text: "関連写真" }),
         relatedPhotos.length ? el("span", { text: `${relatedPhotos.length}枚` }) : "",
       ]),
       el("div", { className: "finding-related-photo-actions" }, [
-        button("この項目に写真を追加", "btn small finding-related-photo-add", () => openFindingPhotoPicker(finding.id)),
+        button("写真を追加（未分類へ）", "btn small finding-related-photo-add", () => openFindingPhotoPicker()),
+        el("span", { className: "field-hint", text: "追加後、写真カードの「写真の掲載先」でこの確認項目を選択してください。" }),
       ]),
       relatedPhotos.length
         ? el(
@@ -860,7 +863,7 @@
     ]);
   }
 
-  function openFindingPhotoPicker(findingId) {
+  function openFindingPhotoPicker() {
     const input = el("input", {
       type: "file",
       accept: "image/*",
@@ -868,7 +871,7 @@
       onchange: (event) => {
         const files = Array.from(event.target.files || []);
         event.target.value = "";
-        handlePhotos(files, findingId);
+        handlePhotos(files);
       },
     });
     input.click();
@@ -954,7 +957,7 @@
 
   function renderReportLayoutSelector() {
     return el("div", { className: "report-layout-selector" }, [
-      el("p", { text: "PDF・プレビューでは、確認項目ごとに関連写真をまとめて表示します。" }),
+      el("p", { text: "PDF・プレビューでは、「建物全景・全体写真」に指定した写真を最初に表示し、その後に確認項目ごとの関連写真をまとめて表示します。未分類写真は表示されません。" }),
     ]);
   }
 
@@ -1056,6 +1059,7 @@
   }
 
   function photoFindingField(photo) {
+    const overviewSelectValue = "__overview";
     const options = state.findings
       .filter((finding) => finding && finding.id)
       .map((finding, index) => ({
@@ -1063,20 +1067,24 @@
         label: safeText(finding.area).trim() || `確認項目${index + 1}`,
       }));
     const selectedId = options.some((option) => option.id === photo.findingId) ? photo.findingId : "";
+    const selectedValue = isOverviewPhoto(photo) ? overviewSelectValue : selectedId;
     return el("div", { className: "field" }, [
-      el("label", { text: "所属する確認項目" }),
+      el("label", { text: "写真の掲載先" }),
       el(
         "select",
         {
-          value: selectedId,
-          className: selectedId ? "" : "is-empty",
+          value: selectedValue,
+          className: selectedValue ? "" : "is-empty",
           onchange: (event) => {
-            patchPhoto(photo.id, "findingId", event.target.value);
-            render();
+            patchPhotoPlacement(
+              photo.id,
+              event.target.value === overviewSelectValue ? PHOTO_REPORT_PLACEMENT_OVERVIEW : event.target.value,
+            );
           },
         },
         [
           el("option", { value: "", text: "未分類" }),
+          el("option", { value: overviewSelectValue, text: PHOTO_REPORT_OVERVIEW_TITLE }),
           ...options.map((option) => el("option", { value: option.id, text: option.label })),
         ],
       ),
@@ -2078,7 +2086,7 @@
   }
 
   function renderReport() {
-    const firstPhoto = state.photos[0];
+    const firstPhoto = getReportCoverPhoto();
     const reportCompanyName = companyDisplayName();
     const reportCustomerName = formatCustomerNameForReport(state.project.clientName);
     const findingPhotoReportChildren = isGroupedReportLayout()
@@ -2117,6 +2125,7 @@
             meta("調査目的", state.project.purpose),
           ]),
         ]),
+        renderOverviewPhotoReportContent(),
         renderAssessmentReport(),
         reportSection(FINDING_PHOTO_REPORT_SECTION_TITLE, [
           ...findingPhotoReportChildren,
@@ -2212,9 +2221,15 @@
     ]);
   }
 
+  function renderOverviewPhotoReportContent() {
+    const overviewPhotos = getOverviewPhotos();
+    if (!overviewPhotos.length) return "";
+    return renderGroupedPhotoList(PHOTO_REPORT_OVERVIEW_TITLE, overviewPhotos, "", "grouped-overview-photos");
+  }
+
   function renderGroupedFindingPhotoReportContent() {
     const blocks = state.findings.flatMap((finding, index) => {
-      const relatedPhotos = state.photos.filter((photo) => photo.findingId === finding.id);
+      const relatedPhotos = state.photos.filter((photo) => isFindingRelatedPhoto(photo, finding.id));
       const photoContextLabel = findingReportItemContextLabel(finding, index);
       return [
         el("div", { className: "grouped-finding-report-block" }, [
@@ -2246,7 +2261,29 @@
 
   function getUnclassifiedPhotos() {
     const validFindingIds = new Set(state.findings.map((finding) => finding.id).filter(Boolean));
-    return state.photos.filter((photo) => !photo.findingId || !validFindingIds.has(photo.findingId));
+    return state.photos.filter((photo) => !isOverviewPhoto(photo) && (!photo.findingId || !validFindingIds.has(photo.findingId)));
+  }
+
+  function getOverviewPhotos() {
+    return state.photos.filter(isOverviewPhoto);
+  }
+
+  function getReportCoverPhoto() {
+    return state.photos.find((photo) => photo.src && (isOverviewPhoto(photo) || isPhotoAssignedToFinding(photo))) || null;
+  }
+
+  function isOverviewPhoto(photo) {
+    return safeText(photo?.reportPlacement).trim() === PHOTO_REPORT_PLACEMENT_OVERVIEW;
+  }
+
+  function isFindingRelatedPhoto(photo, findingId) {
+    return !isOverviewPhoto(photo) && photo?.findingId === findingId;
+  }
+
+  function isPhotoAssignedToFinding(photo) {
+    if (isOverviewPhoto(photo)) return false;
+    const findingId = safeText(photo?.findingId).trim();
+    return Boolean(findingId && state.findings.some((finding) => finding.id === findingId));
   }
 
   function renderGroupedFindingSummary(finding, index = 0) {
@@ -2288,8 +2325,8 @@
     ]);
   }
 
-  function renderGroupedPhotoList(title, photos, contextLabel = "") {
-    return el("div", { className: "grouped-related-photos" }, [
+  function renderGroupedPhotoList(title, photos, contextLabel = "", extraClassName = "") {
+    return el("div", { className: ["grouped-related-photos", extraClassName].filter(Boolean).join(" ") }, [
       renderPhotoReportPageBlocks(title, photos, {
         blocksClassName: "grouped-photo-report-page-blocks",
         gridClassName: "grouped-photo-report-grid",
@@ -2381,11 +2418,16 @@
   }
 
   function renderPhotoReportContent() {
-    if (state.photos.length) {
-      return renderPhotoReportPageBlocks("現場写真", state.photos);
+    const findingRelatedPhotos = getFindingRelatedPhotos();
+    if (findingRelatedPhotos.length) {
+      return renderPhotoReportPageBlocks("現場写真", findingRelatedPhotos);
     }
 
-    return el("div", { className: "empty", text: "写真を追加すると、ここに掲載されます" });
+    return el("div", { className: "empty", text: "確認項目へ掲載する写真を選択すると、ここに表示されます" });
+  }
+
+  function getFindingRelatedPhotos() {
+    return state.photos.filter(isPhotoAssignedToFinding);
   }
 
   function isWidePhoto(photo) {
@@ -2768,7 +2810,7 @@
           "required",
           "調査写真",
           `未分類写真があります（${unclassifiedPhotoCount}枚）`,
-          "確認項目に属さない未分類の写真があります。確認項目ごとに関連写真を表示するPDFには表示されません。必要な写真は、確認項目に紐づけてからPDF出力してください。",
+          "掲載先が決まっていない写真があります。「建物全景・全体写真」または各確認項目を選択してください。未分類写真はプレビュー・印刷・PDFには表示されません。",
         );
       }
     }
@@ -3280,6 +3322,7 @@
     });
 
     photos.forEach((photo, index) => {
+      if (isOverviewPhoto(photo)) return;
       const individualJudgment = normalizePhotoConditionText(photo?.condition);
       if (!rule.photoConditions.includes(individualJudgment)) return;
 
@@ -3538,6 +3581,20 @@
     if (!target) return;
     target[key] = value;
     saveState();
+  }
+
+  function patchPhotoPlacement(id, value) {
+    const target = state.photos.find((item) => item.id === id);
+    if (!target) return;
+    if (value === PHOTO_REPORT_PLACEMENT_OVERVIEW) {
+      target.reportPlacement = PHOTO_REPORT_PLACEMENT_OVERVIEW;
+      target.findingId = "";
+    } else {
+      target.reportPlacement = "";
+      target.findingId = state.findings.some((finding) => finding.id === value) ? value : "";
+    }
+    saveState();
+    render();
   }
 
   function patchPhotoCondition(id, value) {
@@ -4010,8 +4067,7 @@
     render();
   }
 
-  function handlePhotos(files, findingId = "") {
-    const assignedFindingId = state.findings.some((finding) => finding.id === findingId) ? findingId : "";
+  function handlePhotos(files) {
     Array.from(files || []).forEach(async (file) => {
       if (!file.type.startsWith("image/")) return;
       try {
@@ -4028,7 +4084,8 @@
           title: "",
           area: "",
           condition: "",
-          findingId: assignedFindingId,
+          findingId: "",
+          reportPlacement: "",
           finding: "",
           recommendation: "",
           recommendationDisplayMode: "priorityOnly",
@@ -4133,7 +4190,7 @@
     infoY += 32;
     infoY = drawAiConsultationField(
       ctx,
-      "所属する確認項目",
+      "写真の掲載先",
       photoFindingName(photo),
       infoRect.x + 34,
       infoY,
@@ -4453,6 +4510,7 @@
   }
 
   function photoFindingName(photo) {
+    if (isOverviewPhoto(photo)) return PHOTO_REPORT_OVERVIEW_TITLE;
     const findingId = safeText(photo?.findingId).trim();
     const finding = state.findings.find((item) => item.id === findingId);
     return safeText(finding?.area).trim() || "未分類";
@@ -4552,7 +4610,7 @@
       buildPhotoAiPromptInstruction(includeRecommendation) +
       buildPhotoAnnotationAiGuidance(photo) +
       "\n\n【参考情報】\n" +
-      `所属する確認項目：${photoFindingName(photo)}\n` +
+      `写真の掲載先：${photoFindingName(photo)}\n` +
       `この情報は写真の文脈を理解するための参考です。回答欄としては追加せず、回答見出しは次の${responseHeadings.length}項目だけにしてください。\n` +
       responseHeadings.join("\n")
     );
@@ -4565,7 +4623,7 @@
     return (
       `【AI相談用プロンプト】\n\n${buildPhotoAiPromptText(photo)}\n\n` +
       "【現在の入力内容】\n" +
-      `【所属する確認項目】\n${photoFindingName(photo)}\n\n` +
+      `【写真の掲載先】\n${photoFindingName(photo)}\n\n` +
       `【写真タイトル】\n${safeText(photo.title).trim() || "未入力"}\n\n` +
       `【撮影箇所】\n${aiConsultationValue(photo.area) || "未入力"}\n\n` +
       `【調査結果・判断】\n${aiConsultationValue(photo.condition) || "未入力"}\n\n` +
@@ -4617,12 +4675,12 @@
     if (hasFindingInput) return true;
 
     return state.photos.some(
-      (photo) => photo.findingId === finding?.id && hasFindingAiPhotoSource(photo),
+      (photo) => isFindingRelatedPhoto(photo, finding?.id) && hasFindingAiPhotoSource(photo),
     );
   }
 
   function buildFindingRelatedPhotoAiReference(finding) {
-    const relatedPhotos = state.photos.filter((photo) => photo.findingId === finding.id);
+    const relatedPhotos = state.photos.filter((photo) => isFindingRelatedPhoto(photo, finding.id));
     if (!relatedPhotos.length) {
       return "【関連写真の参考情報】\nこの確認項目に紐づく関連写真はまだありません。入力済みの確認項目の内容をもとに文章を整えてください。";
     }
@@ -4657,7 +4715,7 @@
     const maxPhotosPerFinding = 3;
     const maxFindings = 8;
     const hasMeaningfulFindingReference = (finding) => {
-      const hasRelatedPhotos = state.photos.some((photo) => photo.findingId === finding.id);
+      const hasRelatedPhotos = state.photos.some((photo) => isFindingRelatedPhoto(photo, finding.id));
       return (
         hasRelatedPhotos ||
         !isBlank(finding.condition) ||
@@ -4672,7 +4730,7 @@
       return "【確認項目・関連写真の参考情報】\n施工方針AIの参考情報に含める入力済みの確認項目や関連写真はまだありません。施工方針セクションに入力済みの内容をもとに文章を整えてください。";
     }
     const findingBlocks = referenceFindings.slice(0, maxFindings).map((finding, findingIndex) => {
-      const relatedPhotos = state.photos.filter((photo) => photo.findingId === finding.id);
+      const relatedPhotos = state.photos.filter((photo) => isFindingRelatedPhoto(photo, finding.id));
       const remainingPhotoSlots = Math.max(0, maxPhotosTotal - usedPhotoCount);
       const photosToUse = relatedPhotos.slice(0, Math.min(maxPhotosPerFinding, remainingPhotoSlots));
       usedPhotoCount += photosToUse.length;
@@ -5005,7 +5063,7 @@
   function buildSummaryContextAiReference() {
     const valueOrBlank = (value) => truncateAiReferenceText(value) || "未入力";
     const hasMeaningfulFindingReference = (finding) => {
-      const hasRelatedPhotos = state.photos.some((photo) => photo.findingId === finding.id);
+      const hasRelatedPhotos = state.photos.some((photo) => isFindingRelatedPhoto(photo, finding.id));
       return (
         hasRelatedPhotos ||
         !isBlank(finding.condition) ||
@@ -5021,7 +5079,7 @@
     const maxFindings = 8;
     const referenceFindings = state.findings.filter(hasMeaningfulFindingReference);
     const findingBlocks = referenceFindings.slice(0, maxFindings).map((finding, findingIndex) => {
-      const relatedPhotos = state.photos.filter((photo) => photo.findingId === finding.id);
+      const relatedPhotos = state.photos.filter((photo) => isFindingRelatedPhoto(photo, finding.id));
       const remainingPhotoSlots = Math.max(0, maxPhotosTotal - usedPhotoCount);
       const photosToUse = relatedPhotos.slice(0, Math.min(maxPhotosPerFinding, remainingPhotoSlots));
       usedPhotoCount += photosToUse.length;
@@ -6169,7 +6227,7 @@
           el("h2", { text: "未分類写真があります。" }),
           el("p", {
             text:
-              "確認項目に属さない未分類の写真があります。確認項目ごとに関連写真を表示するPDFには表示されません。必要な写真は、確認項目に紐づけてからPDF出力してください。",
+              "掲載先が決まっていない写真があります。「建物全景・全体写真」または各確認項目を選択してください。未分類写真はプレビュー・印刷・PDFには表示されません。",
           }),
           el("div", { className: "input-check-results" }, [
             el("section", { className: "input-issue-group recommended" }, [
@@ -6854,8 +6912,15 @@
     target.photos.forEach((photo) => {
       if (!photo.id) photo.id = createId();
       photo.photoId = photo.photoId || photo.id;
+      photo.reportPlacement = safeText(photo.reportPlacement).trim() === PHOTO_REPORT_PLACEMENT_OVERVIEW
+        ? PHOTO_REPORT_PLACEMENT_OVERVIEW
+        : "";
       const normalizedFindingId = safeText(photo.findingId);
-      photo.findingId = validFindingIds.has(normalizedFindingId) ? normalizedFindingId : "";
+      photo.findingId = photo.reportPlacement
+        ? ""
+        : validFindingIds.has(normalizedFindingId)
+          ? normalizedFindingId
+          : "";
       if (!photo.finding && photo.memo) photo.finding = photo.memo;
       if (!photo.recommendation) photo.recommendation = "";
       if (!photoRecommendationDisplayModes.includes(photo.recommendationDisplayMode)) {

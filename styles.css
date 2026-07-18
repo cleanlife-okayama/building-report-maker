@@ -4587,6 +4587,11 @@ textarea:focus {
     page-break-after: always;
   }
 
+  .grouped-related-photos.grouped-overview-photos {
+    break-before: auto;
+    page-break-before: auto;
+  }
+
   .grouped-related-photos + .grouped-finding-report-block {
     break-before: page;
     page-break-before: always;
