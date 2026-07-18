@@ -957,7 +957,7 @@
 
   function renderReportLayoutSelector() {
     return el("div", { className: "report-layout-selector" }, [
-      el("p", { text: "PDF・プレビューでは、「建物全景・全体写真」に指定した写真を最初に表示し、その後に確認項目ごとの関連写真をまとめて表示します。未分類写真は表示されません。" }),
+      el("p", { text: "PDF・プレビューでは、「建物全景・全体写真」に指定した写真を、確認結果の要約のあと、確認項目ごとの関連写真の前に表示します。未分類写真は表示されません。" }),
     ]);
   }
 
@@ -2125,8 +2125,8 @@
             meta("調査目的", state.project.purpose),
           ]),
         ]),
-        renderOverviewPhotoReportContent(),
         renderAssessmentReport(),
+        renderOverviewPhotoReportContent(),
         reportSection(FINDING_PHOTO_REPORT_SECTION_TITLE, [
           ...findingPhotoReportChildren,
         ], "photo-section"),
