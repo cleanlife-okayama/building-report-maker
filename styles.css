@@ -5406,3 +5406,23 @@ textarea:focus {
     line-height: 1.6;
   }
 }
+
+/* Keep the closing heading and normal-length text together when printing.
+   Allow oversized text to continue across pages without clipping. */
+@media print {
+  .report .closing-section,
+  .report .closing-section > .closing {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .report .closing-section > .closing {
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+
+  .report .closing-section .closing p {
+    orphans: 3;
+    widows: 3;
+  }
+}
